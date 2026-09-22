@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Residenza Ponte D'Oro - App Tablet Completa</title>
     
-    <!-- Librerie Esterne Firebase v8 (Compatibilità totale e zero blocchi CORS) -->
+    <!-- Librerie Esterne Firebase v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -327,13 +327,13 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURAZIONE FIREBASE V8 ---
+        // --- 1. CONFIGURAZIONE FIREBASE V8 CORRETTA (.firebasestorage.app) ---
         const firebaseConfig = {
             apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
             authDomain: "residenza-ponte-d-oro.firebaseapp.com",
             databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "residenza-ponte-d-oro",
-            storageBucket: "residenza-ponte-d-oro.appspot.com",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app", // CORRETTO!
             messagingSenderId: "426557690382",
             appId: "1:426557690382:web:pontedoroapp"
         };
@@ -350,8 +350,6 @@
         let appConfig = { frigoriferi: ["Frigo Cucina", "Cella Frigorifera"], aree: ["Sala Pranzo", "Cucina"], pulizie: ["Sanificazione pavimenti", "Pulizia bagni"] };
         let globalUsciteArray = [];
         let globalGuardarobaArray = [];
-        let globalAttivitaArray = [];
-        let globalParametriArray = [];
         window.globalOspiti = [];
 
         window.formattaData = (iso) => { 
@@ -386,7 +384,7 @@
             window.scrollTo(0,0);
         };
 
-        // --- POPOLAMENTO TENDINE OSPITI ROBUSTO V8 ---
+        // --- POPOLAMENTO TENDINE OSPITI ---
         window.popolaTendineOspiti = (ospitiData) => {
             let ospitiList = [];
             if (Array.isArray(ospitiData)) {
@@ -426,14 +424,12 @@
 
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Operatori da Firestore
                 db.collection("operatori").onSnapshot((snapshot) => {
                     dbOperatori = [];
                     snapshot.forEach(docSnap => dbOperatori.push(docSnap.data()));
                     renderLoginProfiles();
                 });
 
-                // Configurazioni HACCP
                 db.collection("configurazioni").doc("liste").onSnapshot((docSnap) => {
                     if(docSnap.exists) {
                         appConfig = docSnap.data();
@@ -441,7 +437,6 @@
                     }
                 });
 
-                // Ospiti da Realtime DB (Radice Gestionale)
                 rtdb.ref('gestionale_db').on('value', (snapshot) => {
                     const root = snapshot.val();
                     if (root && root.ospiti) {
@@ -449,22 +444,6 @@
                     } else if (root) {
                         window.popolaTendineOspiti(root);
                     }
-                });
-
-                rtdb.ref('gestionale_db/guardaroba').on('value', (snapshot) => {
-                    let val = snapshot.val();
-                    globalGuardarobaArray = val ? (Array.isArray(val) ? val : Object.values(val)).filter(x => x !== null) : [];
-                    window.aggiornaInventarioOspiteTablet();
-                });
-
-                rtdb.ref('gestionale_db/uscite').on('value', (snapshot) => {
-                    let val = snapshot.val();
-                    globalUsciteArray = val ? (Array.isArray(val) ? val : Object.values(val)).filter(x => x !== null) : [];
-                    const attive = globalUsciteArray.filter(u => !u.rientro);
-                    const html = attive.length === 0 ? '<p style="color:var(--text-light); font-size:0.9em;">Nessun ospite fuori.</p>' :
-                        attive.map(u => `<div class="uscita-attiva-card"><div><strong>${u.ospite}</strong><small>Fuori dalle ${u.ora_out}</small></div><button class="btn-rientro" onclick="markRientro(${u.id})">✅ Rientro</button></div>`).join('');
-                    if(document.getElementById('activeUsciteContainer')) document.getElementById('activeUsciteContainer').innerHTML = html;
-                    if(document.getElementById('dashUsciteContainer')) document.getElementById('dashUsciteContainer').innerHTML = html;
                 });
             }
         });
@@ -549,60 +528,6 @@
             }
         };
 
-        window.selectAllTasks = () => { document.querySelectorAll('#dynamic-pulizie-grid .check-item').forEach(item => { item.querySelector('input').checked = true; item.classList.add('active'); }); };
-
-        window.traccBase64 = "";
-        window.previewTraccFoto = (event) => {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                window.traccBase64 = e.target.result;
-                document.getElementById('traccImgPreview').src = window.traccBase64; 
-                document.getElementById('traccPreviewContainer').style.display = 'block';
-            }; reader.readAsDataURL(file);
-        };
-
-        window.consBase64 = "";
-        window.previewConsFoto = (event) => {
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                window.consBase64 = e.target.result;
-                document.getElementById('consImgPreview').src = window.consBase64; 
-                document.getElementById('consPreviewContainer').style.display = 'block';
-            }; reader.readAsDataURL(file);
-        };
-
-        window.saveConsegna = async () => {
-            const data = document.getElementById('consData').value; const turno = document.getElementById('consTurno').value; const note = document.getElementById('consNote').value.trim();
-            if(!window.consBase64) return window.showToast("📸 Scatta la foto al foglio consegne!");
-            try {
-                const snap = await rtdb.ref('gestionale_db/consegne').once('value');
-                let arr = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
-                arr.unshift({ id: Date.now(), data, turno, foto_base64: window.consBase64, note, operatore: (window.activeOp || "OSA") });
-                await rtdb.ref('gestionale_db/consegne').set(arr);
-                window.showToast("✅ Consegna salvata!"); window.consBase64 = ""; window.goHome();
-            } catch(e) { window.showToast("❌ Errore: " + e.message); }
-        };
-
-        window.savePestControl = async () => {
-            const d = document.getElementById('pestDate').value; const n = document.getElementById('pestName').value.trim(); const r = document.getElementById('pestResult').value;
-            if(!d || !n) return window.showToast("⚠️ Compila i campi obbligatori!");
-            try {
-                await db.collection("haccp_pest_control").add({ data_controllo: d, postazione: n, esito: r, operatore: (window.activeOp || "OSA"), timestamp_server: firebase.firestore.FieldValue.serverTimestamp() });
-                window.showToast("✅ Pest Control registrato!"); window.goHome();
-            } catch(e) { window.showToast("❌ Errore: " + e.message); }
-        };
-
-        window.saveSicurezza = async () => {
-            const n = document.getElementById('sicDocName').value.trim(); const d = document.getElementById('sicDocDate').value;
-            if(!n || !d) return window.showToast("⚠️ Compila i campi obbligatori!");
-            try {
-                await db.collection("sicurezza_scadenze").add({ nome: n, data_scadenza: d, operatore: (window.activeOp || "OSA"), timestamp_server: firebase.firestore.FieldValue.serverTimestamp() });
-                window.showToast("✅ Scadenza registrata!"); window.goHome();
-            } catch(e) { window.showToast("❌ Errore: " + e.message); }
-        };
-
         // --- GESTIONE CANVAS ---
         const canvas = document.getElementById('signatureCanvas'); 
         let ctx = canvas.getContext('2d'); window.isDrawing = false;
@@ -670,8 +595,11 @@
 
                         window.showToast("✅ Consensi Privacy salvati!");
                         window.goHome(); window.closeSignature();
-                    } catch(e) { window.showToast("❌ Errore: " + e.message); }
-                    finally { btn.innerText = "✅ Conferma"; btn.disabled = false; }
+                    } catch(e) { 
+                        window.showToast("❌ Errore: " + e.message); 
+                    } finally { 
+                        btn.innerText = "✅ Conferma"; btn.disabled = false; 
+                    }
                 }, 'image/png');
             }
         };
