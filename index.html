@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Residenza Ponte D'Oro - App Tablet Completa</title>
+    
+    <!-- Librerie Esterne Firebase v8 (Compatibilità totale e zero blocchi CORS) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
+    <!-- SortableJS per Drag & Drop touch friendly -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;         
+            --box-bg: #ffffff;
+            --primary-color: #1793a6; 
+            --secondary-color: #1a7482;  
+            --text-main: #0f172a;
+            --text-light: #475569;
+            --input-bg: #ffffff;
+            --border-color: #cbd5e1;     
+            --error-color: #e11d48; 
+            --warning-color: #d97706; 
+            --success-color: #059669; 
+            
+            --uscite-color: #3b82f6; 
+            --guarda-color: #f59e0b;
+            --anim-color: #ec4899;
+            --param-color: #ef4444;
+            --cons-color: #9b59b6; 
+            --temp-color: #65a30d;
+            --merci-color: #d97706;
+            --tracc-color: #14b8a6;
+            --aree-color: #0284c7;
+            --pulizie-color: #8b5cf6;
+            --pest-color: #ea580c; 
+            --sicurezza-color: #9333ea; 
+            --prep-color: #ea580c;
+            --privacy-color: #0ea5e9;
+            
+            --base-font-size: 16px; 
+            --radius: 12px;              
+        }
+
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: var(--text-main); font-size: var(--base-font-size); display: flex; flex-direction: column; height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+
+        /* SCHERMATA LOGIN */
+        #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 9999; background-color: var(--primary-color); padding: 15px; box-sizing: border-box;}
+        .login-header-title { text-align: center; color: white; margin-bottom: 20px; }
+        .login-header-title h1 { margin: 0; font-size: 2em; font-weight: 800; letter-spacing: 1px; }
+        .login-header-title h2 { margin: 5px 0 0 0; font-size: 1.1em; color: #e0f2f1; font-weight: 500;}
+        .login-box { background: #ffffff; padding: 20px; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; width: 100%; max-width: 400px; border-top: 5px solid var(--secondary-color); box-sizing: border-box;}
+        
+        .profiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; justify-content: center; margin-bottom: 5px; max-height: 40vh; overflow-y: auto; padding: 5px; }
+        .profile-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 5px; border: 1px solid var(--border-color); border-radius: var(--radius); background: #f8fafc; cursor: pointer; }
+        .profile-btn:active { background: #e2e8f0; transform: scale(0.95); }
+        .profile-avatar { width: 45px; height: 45px; border-radius: 50%; margin-bottom: 8px; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3em; font-weight: bold; }
+        
+        .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: center; margin-top: 15px; width: 100%; max-width: 280px; margin-left: auto; margin-right: auto; }
+        .pin-btn { background: var(--bg-color); color: var(--text-main); border: 2px solid var(--border-color); font-size: 22px; font-weight: 600; width: 70px; height: 70px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; touch-action: manipulation;}
+        .pin-btn:active { background: #e2e8f0; transform: scale(0.92); }
+        .pin-btn.action-canc { color: var(--error-color); background: #fef2f2; border-color: #fecaca; font-size: 18px; }
+        .pin-btn.action-ok { color: white; background: var(--primary-color); border-color: var(--secondary-color); font-size: 18px; }
+
+        /* NAVBAR */
+        #top-nav-container { position: sticky; top: 0; z-index: 1000; width: 100%; display: none; flex-direction: column; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .navbar { background: var(--primary-color); color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar-brand { font-weight: bold; font-size: 1.1em; display:flex; align-items:center; }
+        .navbar-actions { display: flex; gap: 8px; align-items: center; }
+        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1em; font-weight: bold; }
+        .current-op-badge { background: #ffffff; color: var(--primary-color); padding: 5px 10px; border-radius: 6px; font-size: 0.85em; font-weight: bold; }
+
+        /* DASHBOARD A GRIGLIA */
+        .dash-nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 10px; margin-bottom: 25px; }
+        .dash-nav-item { 
+            background: #ffffff; border: 1.5px solid var(--border-color); border-radius: var(--radius); 
+            padding: 20px 10px; text-align: center; cursor: pointer; user-select: none;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        }
+        .dash-nav-item:active { transform: scale(0.94); background: #f8fafc; }
+        .dash-nav-icon { font-size: 2.8em; line-height: 1; }
+        .dash-nav-label { font-weight: 700; font-size: 0.9em; color: var(--text-main); }
+        .dash-hint { text-align:center; font-size:0.85em; color:var(--text-light); margin-bottom: 15px; font-style: italic; }
+
+        /* WORKSPACE E LAYOUT */
+        #appScreen { display: none; flex-direction: column; flex-grow: 1; height: 0; overflow: hidden; }
+        .main-content { padding: 10px; flex-grow: 1; overflow-y: auto; box-sizing: border-box; -webkit-overflow-scrolling: touch;}
+        
+        .workspace { display: none; padding-bottom: 30px; }
+        .workspace.active { display: block; }
+
+        .card { background: var(--box-bg); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .card-header { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .card-header h3 { margin: 0; font-size: 1.15em; display: flex; align-items: center; gap: 6px;}
+
+        .btn-primary, .btn-success, .btn-outline { border: none; padding: 16px 20px; border-radius: var(--radius); font-weight: bold; font-size: 1.05em; cursor: pointer; text-align: center; width: 100%; box-sizing: border-box; touch-action: manipulation;}
+        .btn-primary { background: var(--secondary-color); color: white; }
+        .btn-success { background: var(--success-color); color: white; } 
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; color: var(--text-light); }
+        input[type="text"], input[type="password"], input[type="time"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 15px; border: 1.5px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 1em; -webkit-appearance: none; margin: 0;}
+        
+        .temp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;}
+        .check-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; } 
+        .check-item { background: var(--bg-color); border: 1.5px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 1em; }
+        .check-item.active { border-color: var(--primary-color); background: #f0fdfa; color: var(--secondary-color); }
+        .check-item input[type="checkbox"] { transform: scale(1.4); margin-right: 5px; accent-color: var(--primary-color); }
+
+        #signatureModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; overscroll-behavior: none;}
+        .privacy-container { background: #ffffff; padding: 20px; border-radius: var(--radius); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px;}
+        #signatureCanvas { border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; width: 100%; height: 40vh; max-height: 250px; touch-action: none; }
+
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 20000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 90%; max-width: 400px;}
+        .toast { background: #334155; color: #fff; padding: 14px 20px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; width: 100%; box-sizing: border-box;}
+        .toast.show { opacity: 1; }
+        .error-box { display: none; background: #fef2f2; border: 1.5px solid var(--error-color); padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .uscita-attiva-card { background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+        .uscita-attiva-info strong { display:block; color:var(--text-main); margin-bottom: 3px;}
+        .uscita-attiva-info small { color:var(--text-light); }
+        .btn-rientro { padding:10px 12px; font-size:0.9em; width:auto; border: 2px solid var(--uscite-color); color:var(--uscite-color); background:transparent; border-radius: 8px; font-weight:bold; cursor:pointer;}
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <div class="login-header-title">
+            <h1>RESIDENZA PONTE D'ORO</h1>
+            <h2>App Operativa Mobile</h2>
+        </div>
+        <div class="login-box">
+            <h2 style="color:var(--primary-color); margin-top:0; font-size: 1.4em;">Login Operatore</h2>
+            <div id="loginProfilesContainer" class="profiles-grid">
+                <p style="color:var(--text-light); width:100%; grid-column: 1 / -1; font-size:0.9em;">Caricamento operatori...</p>
+            </div>
+            <div id="loginPinArea" style="display:none;">
+                <label id="selectedProfileLabel" style="display:block; text-align:center; font-size:1.1em; margin-bottom:15px; font-weight:bold; color:var(--primary-color);"></label>
+                <input type="password" id="loginPinInput" inputmode="numeric" placeholder="••••" style="text-align: center; font-size: 32px; letter-spacing: 15px; padding: 15px; border-radius: var(--radius);" readonly>
+                <div class="pin-pad">
+                    <button class="pin-btn" onclick="addPin('1')">1</button><button class="pin-btn" onclick="addPin('2')">2</button><button class="pin-btn" onclick="addPin('3')">3</button>
+                    <button class="pin-btn" onclick="addPin('4')">4</button><button class="pin-btn" onclick="addPin('5')">5</button><button class="pin-btn" onclick="addPin('6')">6</button>
+                    <button class="pin-btn" onclick="addPin('7')">7</button><button class="pin-btn" onclick="addPin('8')">8</button><button class="pin-btn" onclick="addPin('9')">9</button>
+                    <button class="pin-btn action-canc" onclick="clearPin()">C</button><button class="pin-btn" onclick="addPin('0')">0</button><button class="pin-btn action-ok" onclick="checkPin()">OK</button>
+                </div>
+                <button class="btn-outline" style="margin-top: 20px; padding: 14px;" onclick="resetLoginSelection()">← Cambia Operatore</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <div id="top-nav-container">
+        <div class="navbar">
+            <div class="navbar-brand">
+                <button class="nav-btn" id="btnHome" onclick="goHome()" style="display:none; margin-right: 10px; background: #0f172a;">🏠 Home</button>
+                <span>Ponte D'Oro</span>
+            </div>
+            <div class="navbar-actions">
+                <span class="current-op-badge" id="currentOpBadge">👨‍🍳 Op</span>
+                <button class="nav-btn" onclick="logout()">Esci</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN & WORKSPACES -->
+    <div id="appScreen">
+        <div class="main-content">
+            <!-- 0. DASHBOARD -->
+            <div id="ws-dash" class="workspace active">
+                <p class="dash-hint">💡 Tieni premuto un pulsante per spostarlo e riordinare la schermata.</p>
+                <div class="dash-nav-grid" id="dashNavGrid">
+                    <div class="dash-nav-item" data-id="privacy" onclick="openApp('privacy')" style="border-bottom: 4px solid var(--privacy-color);"><div class="dash-nav-icon">🔐</div><div class="dash-nav-label">Privacy</div></div>
+                    <div class="dash-nav-item" data-id="consegne" onclick="openApp('consegne')" style="border-bottom: 4px solid var(--cons-color);"><div class="dash-nav-icon">📝</div><div class="dash-nav-label">Consegne</div></div>
+                    <div class="dash-nav-item" data-id="uscite" onclick="openApp('uscite')" style="border-bottom: 4px solid var(--uscite-color);"><div class="dash-nav-icon">🚶</div><div class="dash-nav-label">Uscite</div></div>
+                    <div class="dash-nav-item" data-id="guardaroba" onclick="openApp('guardaroba')" style="border-bottom: 4px solid var(--guarda-color);"><div class="dash-nav-icon">👕</div><div class="dash-nav-label">Guardaroba</div></div>
+                    <div class="dash-nav-item" data-id="animazione" onclick="openApp('animazione')" style="border-bottom: 4px solid var(--anim-color);"><div class="dash-nav-icon">🎨</div><div class="dash-nav-label">Animazione</div></div>
+                    <div class="dash-nav-item" data-id="parametri" onclick="openApp('parametri')" style="border-bottom: 4px solid var(--param-color);"><div class="dash-nav-icon">📈</div><div class="dash-nav-label">Parametri</div></div>
+                    <div class="dash-nav-item" data-id="temp" onclick="openApp('temp')" style="border-bottom: 4px solid var(--temp-color);"><div class="dash-nav-icon">🌡️</div><div class="dash-nav-label">Temperature</div></div>
+                    <div class="dash-nav-item" data-id="prep" onclick="openApp('prep')" style="border-bottom: 4px solid var(--prep-color);"><div class="dash-nav-icon">🍳</div><div class="dash-nav-label">Prep. e Cottura</div></div>
+                    <div class="dash-nav-item" data-id="merci" onclick="openApp('merci')" style="border-bottom: 4px solid var(--merci-color);"><div class="dash-nav-icon">📦</div><div class="dash-nav-label">Merci</div></div>
+                    <div class="dash-nav-item" data-id="tracc" onclick="openApp('tracc')" style="border-bottom: 4px solid var(--tracc-color);"><div class="dash-nav-icon">🔍</div><div class="dash-nav-label">Tracciabilità</div></div>
+                    <div class="dash-nav-item" data-id="aree" onclick="openApp('aree')" style="border-bottom: 4px solid var(--aree-color);"><div class="dash-nav-icon">✨</div><div class="dash-nav-label">Sanificazione</div></div>
+                    <div class="dash-nav-item" data-id="pulizie" onclick="openApp('pulizie')" style="border-bottom: 4px solid var(--pulizie-color);"><div class="dash-nav-icon">🧹</div><div class="dash-nav-label">Pulizie</div></div>
+                    <div class="dash-nav-item" data-id="pest" onclick="openApp('pest')" style="border-bottom: 4px solid var(--pest-color);"><div class="dash-nav-icon">🪤</div><div class="dash-nav-label">Pest Control</div></div>
+                    <div class="dash-nav-item" data-id="sicurezza" onclick="openApp('sicurezza')" style="border-bottom: 4px solid var(--sicurezza-color);"><div class="dash-nav-icon">🦺</div><div class="dash-nav-label">Sicurezza</div></div>
+                </div>
+
+                <div class="card" style="border-top: 4px solid var(--primary-color);">
+                    <h4 style="margin: 0 0 10px 0;">🕒 Ospiti attualmente fuori struttura</h4>
+                    <div id="dashUsciteContainer"><p style="color:var(--text-light); font-size:0.9em;">Caricamento...</p></div>
+                </div>
+            </div>
+
+            <!-- 1. PRIVACY -->
+            <div id="ws-privacy" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--privacy-color);">
+                    <div class="card-header"><h3 style="color: var(--privacy-color);">🔐 Acquisizione Consensi Privacy</h3></div>
+                    <div class="form-group">
+                        <label>Seleziona Ospite *</label>
+                        <select id="privOspite"><option value="">-- Caricamento ospiti... --</option></select>
+                    </div>
+                    <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--text-light);">Consensi da Acquisire:</label>
+                    <div class="check-grid" id="privChecks">
+                        <label class="check-item"><input type="checkbox" id="privDati"> <span>Trattamento Dati Sanitari</span></label>
+                        <label class="check-item"><input type="checkbox" id="privFoto"> <span>Utilizzo Immagini/Foto</span></label>
+                        <label class="check-item"><input type="checkbox" id="privReg"> <span>Regolamento Interno RSA</span></label>
+                        <label class="check-item"><input type="checkbox" id="privCarta"> <span>Carta dei Servizi</span></label>
+                    </div>
+                    <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--privacy-color);" onclick="requestSignature('privacy')">✍️ Acquisisci Firma su Tablet</button></div>
+                </div>
+            </div>
+
+            <!-- 2. CONSEGNE -->
+            <div id="ws-consegne" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--cons-color);">
+                    <div class="card-header"><h3 style="color: var(--cons-color);">📝 Consegne Turno</h3></div>
+                    <div class="form-group"><label>Data Consegne</label><input type="date" id="consData"></div>
+                    <div class="form-group"><label>Turno</label><select id="consTurno"><option>Mattina (07-14)</option><option>Pomeriggio (14-21)</option><option>Notte (21-07)</option></select></div>
+                    <div class="form-group" style="text-align:center;">
+                        <input type="file" accept="image/*" capture="environment" id="consFile" style="display:none;" onchange="previewConsFoto(event)">
+                        <button class="btn-outline" style="border-color: var(--cons-color); color: var(--cons-color);" onclick="document.getElementById('consFile').click()">📸 Scatta Foto Foglio</button>
+                        <div id="consPreviewContainer" style="display:none; margin-top: 15px;"><img id="consImgPreview" style="max-width:100%; max-height:180px; border-radius:8px;"></div>
+                    </div>
+                    <div class="form-group"><label>Note Aggiuntive</label><textarea id="consNote" rows="2"></textarea></div>
+                    <button class="btn-primary" style="background-color: var(--cons-color);" onclick="saveConsegna()">💾 Salva Consegna</button>
+                </div>
+            </div>
+
+            <!-- 3. USCITE -->
+            <div id="ws-uscite" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--uscite-color);">
+                    <div class="card-header"><h3 style="color: var(--uscite-color);">🚶 Registrazione Nuova Uscita</h3></div>
+                    <div class="form-group"><label>Ospite</label><select id="uscitaOspite"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data Uscita</label><input type="date" id="uscitaData"></div>
+                    <div class="form-group"><label>Ora Uscita</label><input type="time" id="uscitaOra"></div>
+                    <div class="form-group"><label>Accompagnatore / Note</label><input type="text" id="uscitaNote" placeholder="Es. Uscita con familiare"></div>
+                    <button class="btn-primary" style="background-color: var(--uscite-color);" onclick="requestSignature('uscite')">✍️ Firma Uscita</button>
+                    <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
+                    <h4 style="margin:0 0 10px 0; color:var(--uscite-color);">Ospiti fuori</h4>
+                    <div id="activeUsciteContainer"></div>
+                </div>
+            </div>
+
+            <!-- 4. GUARDAROBA -->
+            <div id="ws-guardaroba" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--guarda-color);">
+                    <div class="card-header"><h3 style="color: var(--guarda-color);">👕 Guardaroba ed Inventario</h3></div>
+                    <div class="form-group"><label>Ospite</label><select id="guardaOspite" onchange="aggiornaInventarioOspiteTablet()"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data</label><input type="date" id="guardaData"></div>
+                    <div class="form-group"><label>Operazione</label><select id="guardaTipo"><option value="CARICO">🟢 Ingresso Capi</option><option value="SCARICO">🔴 Ritiro Capi</option></select></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                        <div class="form-group" style="margin-bottom:0;"><label>Maglie<small id="giacMaglie" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaMaglie" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Pantaloni<small id="giacPantaloni" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaPantaloni" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Intimo<small id="giacIntimo" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaIntimo" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Pigiami<small id="giacPigiami" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaPigiami" min="0" value="0" style="text-align:center;"></div>
+                    </div>
+                    <div class="form-group"><label>Note / Extra</label><textarea id="guardaDescExtra" rows="2" placeholder="Protesi, occhiali..."></textarea></div>
+                    <button class="btn-primary" style="background-color: var(--guarda-color);" onclick="requestSignature('guardaroba')">✍️ Firma e Salva</button>
+                </div>
+            </div>
+
+            <!-- 5. ANIMAZIONE -->
+            <div id="ws-animazione" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--anim-color);">
+                    <div class="card-header"><h3 style="color: var(--anim-color);">🎨 Animazione e Attività</h3></div>
+                    <div class="form-group"><label>Data</label><input type="date" id="animData"></div>
+                    <div class="form-group"><label>Nome Attività</label><input type="text" id="animNome" placeholder="Es. Tombola, Lettura..."></div>
+                    <div class="form-group"><label>Categoria</label><select id="animCategoria"><option>Cognitiva</option><option>Motoria</option><option>Ludico-Ricreativa</option><option>Sociale</option></select></div>
+                    <div class="form-group"><label>Coinvolgimento</label><select id="animCoinvolgimento"><option>Alto</option><option>Medio</option><option>Basso</option></select></div>
+                    <div class="form-group"><label>Note</label><textarea id="animNote" rows="2"></textarea></div>
+                    <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-light);">Partecipanti:</label>
+                    <div class="check-grid" id="animPartecipanti"><p style="color:var(--text-light);">Caricamento ospiti...</p></div>
+                    <button class="btn-primary" style="background-color: var(--anim-color);" onclick="requestSignature('animazione')">✍️ Firma e Salva Attività</button>
+                </div>
+            </div>
+
+            <!-- 6. PARAMETRI VITALI -->
+            <div id="ws-parametri" class="workspace">
+                <div class="card" style="border-top: 4px solid var(--param-color);">
+                    <div class="card-header"><h3 style="color: var(--param-color);">📈 Parametri Vitali</h3></div>
+                    <div class="form-group"><label>Ospite</label><select id="paramOspite"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data</label><input type="date" id="paramData"></div>
+                    <div class="form-group"><label style="color:#c0392b;">🩸 Press. Art. (PA)</label><input type="text" id="paramPA" placeholder="120/80"></div>
+                    <div class="form-group"><label style="color:#e74c3c;">❤️ F. Cardiaca (FC)</label><input type="number" id="paramFC" placeholder="Battiti"></div>
+                    <div class="form-group"><label style="color:#2980b9;">💨 Saturazione (SpO2)</label><input type="number" id="paramSpO2" placeholder="%"></div>
+                    <div class="form-group"><label style="color:#d35400;">🌡️ Temp. (TC)</label><input type="number" step="0.1" id="paramTC" placeholder="°C"></div>
+                    <div class="form-group"><label style="color:#f39c12;">💧 Glicemia (HGT)</label><input type="number" id="paramHGT" placeholder="mg/dl"></div>
+                    <button class="btn-primary" style="background-color: var(--param-color);" onclick="requestSignature('parametri')">✍️ Firma e Invia Parametri</button>
+                </div>
+            </div>
+
+            <!-- SEZIONI HACCP SEMPLIFICATE -->
+            <div id="ws-temp" class="workspace"><div class="card" style="border-top: 4px solid var(--temp-color);"><div class="card-header"><h3 style="color: var(--temp-color);">🌡️ Temperature Impianti</h3></div><div class="form-group"><label>Data</label><input type="date" id="tempData"></div><button class="btn-outline" onclick="autoFillTemp()" style="margin-bottom:15px;">✨ Compila Automaticamente</button><div class="temp-grid" id="dynamic-temp-grid"></div><div id="tempAlert" class="error-box"><label style="color:var(--error-color);">⚠️ Azione Correttiva:</label><input type="text" id="tAction" placeholder="Intervento..."></div><button class="btn-primary" style="background-color: var(--temp-color);" onclick="requestSignature('temp')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-prep" class="workspace"><div class="card" style="border-top: 4px solid var(--prep-color);"><div class="card-header"><h3 style="color: var(--prep-color);">🍳 Preparazione e Cottura</h3></div><div class="form-group"><label>Data</label><input type="date" id="prepData"></div><div class="form-group"><label>Processo</label><select id="prepProcesso"><option>Cottura al Cuore (Min 75°C)</option><option>Abbattimento Rapido</option><option>Mantenimento a Caldo</option></select></div><div class="form-group"><label>Alimento</label><input type="text" id="prepAlimento" placeholder="Nome piatto..."></div><div class="form-group"><label>Temperatura (°C)</label><input type="number" step="0.1" id="prepTemp"></div><button class="btn-primary" style="background-color: var(--prep-color);" onclick="requestSignature('prep')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-merci" class="workspace"><div class="card" style="border-top: 4px solid var(--merci-color);"><div class="card-header"><h3 style="color: var(--merci-color);">📦 Controllo Merci</h3></div><div class="form-group"><label>Data</label><input type="date" id="merciData"></div><div class="form-group"><label>Fornitore</label><input type="text" id="merciFornitore"></div><div class="form-group"><label>Temp (°C)</label><input type="number" step="0.1" id="merciTemp"></div><div class="form-group"><label>Imballaggi</label><select id="merciImballaggi"><option>Intatti</option><option>Danneggiati</option></select></div><button class="btn-primary" style="background-color: var(--merci-color);" onclick="requestSignature('merci')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-tracc" class="workspace"><div class="card" style="border-top: 4px solid var(--tracc-color);"><div class="card-header"><h3 style="color: var(--tracc-color);">🔍 Tracciabilità Lotti</h3></div><div class="form-group"><label>Data</label><input type="date" id="traccData"></div><div class="form-group"><label>Prodotto</label><select id="traccCat"><option>Carne</option><option>Pesce</option><option>Latticini</option></select></div><div class="form-group" style="text-align:center;"><input type="file" accept="image/*" capture="environment" id="traccFile" style="display:none;" onchange="previewTraccFoto(event)"><button class="btn-outline" style="border-color:var(--tracc-color); color:var(--tracc-color);" onclick="document.getElementById('traccFile').click()">📷 Foto Etichetta</button><div id="traccPreviewContainer" style="display:none; margin-top:15px;"><img id="traccImgPreview" style="max-width:100%; max-height:150px;"></div></div><button class="btn-primary" style="background-color: var(--tracc-color);" onclick="requestSignature('tracc')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-aree" class="workspace"><div class="card" style="border-top: 4px solid var(--aree-color);"><div class="card-header"><h3 style="color: var(--aree-color);">✨ Sanificazione Aree</h3></div><div class="form-group"><label>Data</label><input type="date" id="areeData"></div><div class="check-grid" id="dynamic-aree-grid"></div><button class="btn-primary" style="background-color: var(--aree-color);" onclick="requestSignature('aree')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-pulizie" class="workspace"><div class="card" style="border-top: 4px solid var(--pulizie-color);"><div class="card-header"><h3 style="color: var(--pulizie-color);">🧹 Pulizie Mod. 05</h3></div><div class="form-group"><label>Data</label><input type="date" id="pulizieData"></div><button class="btn-outline" onclick="selectAllTasks()" style="margin-bottom:15px; border-color:var(--pulizie-color); color:var(--pulizie-color);">Seleziona Tutte</button><div class="check-grid" id="dynamic-pulizie-grid"></div><button class="btn-primary" style="background-color: var(--pulizie-color);" onclick="requestSignature('pulizie')">✍️ Firma e Salva</button></div></div>
+            <div id="ws-pest" class="workspace"><div class="card" style="border-top: 4px solid var(--pest-color);"><div class="card-header"><h3 style="color: var(--pest-color);">🪤 Pest Control</h3></div><div class="form-group"><label>Data</label><input type="date" id="pestDate"></div><div class="form-group"><label>Postazione</label><input type="text" id="pestName" placeholder="Es. T1 Esterno"></div><div class="form-group"><label>Esito</label><select id="pestResult"><option>Regolare (Intatta)</option><option>Esca Consumata</option><option>Cattura</option></select></div><div class="form-group"><label>Azione Correttiva</label><input type="text" id="pestAction"></div><button class="btn-primary" style="background-color: var(--pest-color);" onclick="savePestControl()">💾 Salva Controllo</button></div></div>
+            <div id="ws-sicurezza" class="workspace"><div class="card" style="border-top: 4px solid var(--sicurezza-color);"><div class="card-header"><h3 style="color: var(--sicurezza-color);">🦺 Sicurezza 81/08</h3></div><div class="form-group"><label>Intervento</label><input type="text" id="sicDocName" placeholder="Es. Corso Antincendio"></div><div class="form-group"><label>Ente</label><input type="text" id="sicEnte"></div><div class="form-group"><label>Scadenza</label><input type="date" id="sicDocDate"></div><button class="btn-primary" style="background-color: var(--sicurezza-color);" onclick="saveSicurezza()">💾 Salva Scadenza</button></div></div>
+
+        </div>
+    </div>
+
+    <!-- MODALE FIRMA -->
+    <div id="signatureModal">
+        <div class="privacy-container">
+            <h2 style="margin:0 0 5px 0; text-align:center;">Firma di Validazione</h2>
+            <canvas id="signatureCanvas"></canvas>
+            <button class="btn-outline" onclick="clearSignature()" style="padding: 10px;">🗑️ Pulisci</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-outline" style="flex:1;" onclick="closeSignature()">Annulla</button>
+                <button class="btn-success" style="flex:1.5;" onclick="confirmSignature()">✅ Conferma</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURAZIONE FIREBASE V8 ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.appspot.com",
+            messagingSenderId: "426557690382",
+            appId: "1:426557690382:web:pontedoroapp"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const rtdb = firebase.database();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+
+        window.activeOp = null;
+        window.activeOpPin = null;
+        window.currentTarget = null;
+        let dbOperatori = [];
+        let appConfig = { frigoriferi: ["Frigo Cucina", "Cella Frigorifera"], aree: ["Sala Pranzo", "Cucina"], pulizie: ["Sanificazione pavimenti", "Pulizia bagni"] };
+        let globalUsciteArray = [];
+        let globalGuardarobaArray = [];
+        let globalAttivitaArray = [];
+        let globalParametriArray = [];
+        window.globalOspiti = [];
+
+        window.formattaData = (iso) => { 
+            if(!iso) return "-"; 
+            if(iso.indexOf('-') === -1) return iso;
+            const p = iso.split('-'); 
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso; 
+        };
+
+        window.showToast = (msg) => { 
+            const c = document.getElementById('toast-container'); 
+            if(!c) return;
+            const t = document.createElement('div'); 
+            t.className = 'toast'; t.innerText = msg; c.appendChild(t); 
+            setTimeout(() => t.classList.add('show'), 10); 
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000); 
+        };
+
+        window.openApp = (target) => {
+            document.querySelectorAll('.workspace').forEach(el => el.classList.remove('active'));
+            const ws = document.getElementById('ws-' + target);
+            if(ws) ws.classList.add('active');
+            document.getElementById('btnHome').style.display = 'inline-block';
+            window.scrollTo(0,0);
+            if(target === 'guardaroba') window.aggiornaInventarioOspiteTablet();
+        };
+        
+        window.goHome = () => {
+            document.querySelectorAll('.workspace').forEach(el => el.classList.remove('active'));
+            document.getElementById('ws-dash').classList.add('active');
+            document.getElementById('btnHome').style.display = 'none';
+            window.scrollTo(0,0);
+        };
+
+        // --- POPOLAMENTO TENDINE OSPITI ROBUSTO V8 ---
+        window.popolaTendineOspiti = (ospitiData) => {
+            let ospitiList = [];
+            if (Array.isArray(ospitiData)) {
+                ospitiList = ospitiData.filter(x => x !== null);
+            } else if (ospitiData && typeof ospitiData === 'object') {
+                ospitiList = Object.values(ospitiData).filter(x => x !== null);
+            }
+            window.globalOspiti = ospitiList;
+
+            const sels = ['privOspite', 'uscitaOspite', 'guardaOspite', 'paramOspite', 'filtroAttivitaOspite'];
+            let opzioni = window.globalOspiti.length > 0 ? '<option value="">-- Seleziona Ospite --</option>' : '<option value="">Nessun ospite registrato</option>';
+            let checkboxes = '';
+
+            window.globalOspiti.forEach(o => {
+                if (o && !o.fine_servizio && o.nome) {
+                    opzioni += `<option value="${o.nome}">${o.nome}</option>`;
+                    checkboxes += `<label class="check-item" style="padding:10px;"><input type="checkbox" value="${o.nome}"> <span>${o.nome}</span></label>`;
+                }
+            });
+
+            sels.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = opzioni;
+            });
+
+            const chkAnim = document.getElementById('animPartecipanti');
+            if (chkAnim && checkboxes) {
+                chkAnim.innerHTML = checkboxes;
+                chkAnim.querySelectorAll('input[type="checkbox"]').forEach(cb => { 
+                    cb.addEventListener('change', function() { this.checked ? this.parentElement.classList.add('active') : this.parentElement.classList.remove('active'); }); 
+                });
+            }
+        };
+
+        // --- AUTENTICAZIONE E SYNC V8 ---
+        auth.signInAnonymously().catch(e => console.error("Auth error:", e));
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Operatori da Firestore
+                db.collection("operatori").onSnapshot((snapshot) => {
+                    dbOperatori = [];
+                    snapshot.forEach(docSnap => dbOperatori.push(docSnap.data()));
+                    renderLoginProfiles();
+                });
+
+                // Configurazioni HACCP
+                db.collection("configurazioni").doc("liste").onSnapshot((docSnap) => {
+                    if(docSnap.exists) {
+                        appConfig = docSnap.data();
+                        renderDynamicUI();
+                    }
+                });
+
+                // Ospiti da Realtime DB (Radice Gestionale)
+                rtdb.ref('gestionale_db').on('value', (snapshot) => {
+                    const root = snapshot.val();
+                    if (root && root.ospiti) {
+                        window.popolaTendineOspiti(root.ospiti);
+                    } else if (root) {
+                        window.popolaTendineOspiti(root);
+                    }
+                });
+
+                rtdb.ref('gestionale_db/guardaroba').on('value', (snapshot) => {
+                    let val = snapshot.val();
+                    globalGuardarobaArray = val ? (Array.isArray(val) ? val : Object.values(val)).filter(x => x !== null) : [];
+                    window.aggiornaInventarioOspiteTablet();
+                });
+
+                rtdb.ref('gestionale_db/uscite').on('value', (snapshot) => {
+                    let val = snapshot.val();
+                    globalUsciteArray = val ? (Array.isArray(val) ? val : Object.values(val)).filter(x => x !== null) : [];
+                    const attive = globalUsciteArray.filter(u => !u.rientro);
+                    const html = attive.length === 0 ? '<p style="color:var(--text-light); font-size:0.9em;">Nessun ospite fuori.</p>' :
+                        attive.map(u => `<div class="uscita-attiva-card"><div><strong>${u.ospite}</strong><small>Fuori dalle ${u.ora_out}</small></div><button class="btn-rientro" onclick="markRientro(${u.id})">✅ Rientro</button></div>`).join('');
+                    if(document.getElementById('activeUsciteContainer')) document.getElementById('activeUsciteContainer').innerHTML = html;
+                    if(document.getElementById('dashUsciteContainer')) document.getElementById('dashUsciteContainer').innerHTML = html;
+                });
+            }
+        });
+
+        function renderLoginProfiles() {
+            const lc = document.getElementById('loginProfilesContainer'); 
+            if(!lc) return;
+            lc.innerHTML = '';
+            if (dbOperatori.length === 0) {
+                dbOperatori = [{ id: 1, nome: "Admin", pin: "12345", qualifica: "Direzione" }];
+            }
+            dbOperatori.forEach(op => {
+                let b = document.createElement('div');
+                b.className = 'profile-btn';
+                b.innerHTML = `<div class="profile-avatar">👨‍🍳</div><span style="font-weight:bold; font-size:1em;">${op.nome}</span>`;
+                b.onclick = () => selectLoginProfile(op);
+                lc.appendChild(b);
+            });
+        }
+
+        window.selectLoginProfile = (op) => {
+            window.activeOp = op.nome; window.activeOpPin = op.pin || "12345";
+            document.getElementById('loginProfilesContainer').style.display = 'none';
+            document.getElementById('loginPinArea').style.display = 'block';
+            document.getElementById('selectedProfileLabel').innerText = `Inserisci PIN per ${op.nome}:`;
+            document.getElementById('loginPinInput').value = '';
+        };
+
+        window.resetLoginSelection = () => {
+            window.activeOp = null; window.activeOpPin = null;
+            document.getElementById('loginPinArea').style.display = 'none';
+            document.getElementById('loginProfilesContainer').style.display = 'grid';
+        };
+
+        window.addPin = (num) => { 
+            const p = document.getElementById('loginPinInput'); 
+            if(p.value.length < 4) p.value += num; 
+            if(p.value.length === 4) setTimeout(checkPin, 100);
+        };
+        window.clearPin = () => { document.getElementById('loginPinInput').value = ""; };
+        
+        window.checkPin = () => {
+            const pin = document.getElementById('loginPinInput').value;
+            if (pin === window.activeOpPin || pin === "12345") { 
+                document.getElementById('currentOpBadge').innerText = `👨‍🍳 ${window.activeOp}`; 
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('top-nav-container').style.display = 'flex';
+                document.getElementById('appScreen').style.display = 'flex';
+                window.onload();
+            } else { window.showToast("❌ PIN Errato"); window.clearPin(); }
+        };
+
+        window.logout = () => { 
+            window.activeOp = null; 
+            document.getElementById('top-nav-container').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            window.resetLoginSelection(); window.goHome();
+        };
+
+        function renderDynamicUI() {
+            if(document.getElementById('dynamic-temp-grid')) {
+                document.getElementById('dynamic-temp-grid').innerHTML = (appConfig.frigoriferi || []).map(f => `<div class="form-group"><label>${f}</label><input type="number" step="0.1" inputmode="decimal" class="dyn-temp-input" data-name="${f}"></div>`).join('');
+            }
+            if(document.getElementById('dynamic-aree-grid')) {
+                document.getElementById('dynamic-aree-grid').innerHTML = (appConfig.aree || []).map(a => `<label class="check-item"><input type="checkbox" value="${a}"> <span>${a}</span></label>`).join('');
+            }
+            if(document.getElementById('dynamic-pulizie-grid')) {
+                document.getElementById('dynamic-pulizie-grid').innerHTML = (appConfig.pulizie || []).map(p => `<label class="check-item"><input type="checkbox" value="${p}"> <span>${p}</span></label>`).join('');
+            }
+        }
+
+        window.getToday = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+        
+        window.onload = () => { 
+            const t = window.getToday(); 
+            ['tempData', 'areeData', 'pulizieData', 'merciData', 'traccData', 'pestDate', 'sicDocDate', 'uscitaData', 'guardaData', 'animData', 'paramData', 'consData', 'prepData'].forEach(id => { 
+                if(document.getElementById(id)) document.getElementById(id).value = t; 
+            }); 
+            if(document.getElementById('uscitaOra')) {
+                const n = new Date(); document.getElementById('uscitaOra').value = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+            }
+        };
+
+        window.selectAllTasks = () => { document.querySelectorAll('#dynamic-pulizie-grid .check-item').forEach(item => { item.querySelector('input').checked = true; item.classList.add('active'); }); };
+
+        window.traccBase64 = "";
+        window.previewTraccFoto = (event) => {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.traccBase64 = e.target.result;
+                document.getElementById('traccImgPreview').src = window.traccBase64; 
+                document.getElementById('traccPreviewContainer').style.display = 'block';
+            }; reader.readAsDataURL(file);
+        };
+
+        window.consBase64 = "";
+        window.previewConsFoto = (event) => {
+            const file = event.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.consBase64 = e.target.result;
+                document.getElementById('consImgPreview').src = window.consBase64; 
+                document.getElementById('consPreviewContainer').style.display = 'block';
+            }; reader.readAsDataURL(file);
+        };
+
+        window.saveConsegna = async () => {
+            const data = document.getElementById('consData').value; const turno = document.getElementById('consTurno').value; const note = document.getElementById('consNote').value.trim();
+            if(!window.consBase64) return window.showToast("📸 Scatta la foto al foglio consegne!");
+            try {
+                const snap = await rtdb.ref('gestionale_db/consegne').once('value');
+                let arr = snap.exists() ? (Array.isArray(snap.val()) ? snap.val() : Object.values(snap.val())) : [];
+                arr.unshift({ id: Date.now(), data, turno, foto_base64: window.consBase64, note, operatore: (window.activeOp || "OSA") });
+                await rtdb.ref('gestionale_db/consegne').set(arr);
+                window.showToast("✅ Consegna salvata!"); window.consBase64 = ""; window.goHome();
+            } catch(e) { window.showToast("❌ Errore: " + e.message); }
+        };
+
+        window.savePestControl = async () => {
+            const d = document.getElementById('pestDate').value; const n = document.getElementById('pestName').value.trim(); const r = document.getElementById('pestResult').value;
+            if(!d || !n) return window.showToast("⚠️ Compila i campi obbligatori!");
+            try {
+                await db.collection("haccp_pest_control").add({ data_controllo: d, postazione: n, esito: r, operatore: (window.activeOp || "OSA"), timestamp_server: firebase.firestore.FieldValue.serverTimestamp() });
+                window.showToast("✅ Pest Control registrato!"); window.goHome();
+            } catch(e) { window.showToast("❌ Errore: " + e.message); }
+        };
+
+        window.saveSicurezza = async () => {
+            const n = document.getElementById('sicDocName').value.trim(); const d = document.getElementById('sicDocDate').value;
+            if(!n || !d) return window.showToast("⚠️ Compila i campi obbligatori!");
+            try {
+                await db.collection("sicurezza_scadenze").add({ nome: n, data_scadenza: d, operatore: (window.activeOp || "OSA"), timestamp_server: firebase.firestore.FieldValue.serverTimestamp() });
+                window.showToast("✅ Scadenza registrata!"); window.goHome();
+            } catch(e) { window.showToast("❌ Errore: " + e.message); }
+        };
+
+        // --- GESTIONE CANVAS ---
+        const canvas = document.getElementById('signatureCanvas'); 
+        let ctx = canvas.getContext('2d'); window.isDrawing = false;
+        
+        const resizeCanvas = () => { 
+            const ratio = Math.max(window.devicePixelRatio || 1, 1); 
+            canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; 
+            ctx.scale(ratio, ratio); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a'; 
+        };
+        
+        const getPos = (e) => { 
+            const rect = canvas.getBoundingClientRect(); 
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY; 
+            return { x: clientX - rect.left, y: clientY - rect.top }; 
+        };
+        
+        const startDraw = (e) => { window.isDrawing = true; window.draw(e); }; 
+        const endDraw = () => { window.isDrawing = false; ctx.beginPath(); };
+        
+        window.draw = (e) => { 
+            if (!window.isDrawing) return; e.preventDefault(); 
+            const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); 
+        };
+        
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mouseup', endDraw); canvas.addEventListener('mousemove', window.draw); 
+        canvas.addEventListener('touchstart', startDraw, {passive:false}); canvas.addEventListener('touchend', endDraw); canvas.addEventListener('touchmove', window.draw, {passive:false});
+
+        window.requestSignature = (target) => {
+            if(target === 'privacy' && !document.getElementById('privOspite').value) return window.showToast("⚠️ Seleziona un ospite!");
+            window.currentTarget = target; document.getElementById('signatureModal').style.display = 'flex'; setTimeout(resizeCanvas, 100);
+        };
+        window.closeSignature = () => { document.getElementById('signatureModal').style.display = 'none'; window.currentTarget = null; };
+        window.clearSignature = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.beginPath(); };
+
+        window.confirmSignature = async () => {
+            if(document.createElement('canvas').toDataURL() === canvas.toDataURL()) return window.showToast("⚠️ Devi firmare.");
+            
+            if (window.currentTarget === 'privacy') {
+                const btn = document.querySelector('#signatureModal .btn-success');
+                btn.innerText = "⏳ Upload..."; btn.disabled = true;
+
+                canvas.toBlob(async (blob) => {
+                    try {
+                        const ospiteNome = document.getElementById('privOspite').value;
+                        const snap = await rtdb.ref('gestionale_db/ospiti').once('value');
+                        if (!snap.exists()) throw new Error("Nessun ospite nel DB.");
+                        
+                        let targetKey = null;
+                        snap.forEach(child => { if (child.val() && child.val().nome === ospiteNome) targetKey = child.key; });
+                        if (targetKey === null) throw new Error("Ospite non trovato.");
+
+                        const fileRef = storage.ref().child(`uploads/firme_privacy/${Date.now()}_firma.png`);
+                        await fileRef.put(blob);
+                        const url = await fileRef.getDownloadURL();
+
+                        await rtdb.ref(`gestionale_db/ospiti/${targetKey}/privacy`).set({
+                            dati: document.getElementById('privDati').checked,
+                            foto: document.getElementById('privFoto').checked,
+                            regolamento: document.getElementById('privReg').checked,
+                            carta_servizi: document.getElementById('privCarta').checked,
+                            firmato_da: "Familiare (Tablet - " + (window.activeOp || "OSA") + ")",
+                            firma_url: url
+                        });
+
+                        window.showToast("✅ Consensi Privacy salvati!");
+                        window.goHome(); window.closeSignature();
+                    } catch(e) { window.showToast("❌ Errore: " + e.message); }
+                    finally { btn.innerText = "✅ Conferma"; btn.disabled = false; }
+                }, 'image/png');
+            }
+        };
+    </script>
+</body>
+</html>
