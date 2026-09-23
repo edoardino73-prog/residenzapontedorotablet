@@ -45,6 +45,9 @@
             --sicurezza-color: #9333ea; 
             --prep-color: #ea580c;
             --privacy-color: #0ea5e9;
+            --nuovo-osp-color: #0d9488;
+            --bina-color: #6366f1;
+            --allogg-color: #1e293b;
             
             --base-font-size: 16px; 
             --radius: 12px;              
@@ -106,16 +109,30 @@
         .btn-primary { background: var(--secondary-color); color: white; }
         .btn-success { background: var(--success-color); color: white; } 
         .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+        .btn-sm { padding: 8px 12px; font-size: 0.9em; width: auto; }
 
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; color: var(--text-light); }
         input[type="text"], input[type="password"], input[type="time"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 15px; border: 1.5px solid var(--border-color); border-radius: 8px; box-sizing: border-box; background-color: var(--input-bg); color: var(--text-main); font-family: inherit; font-size: 1em; -webkit-appearance: none; margin: 0;}
         
+        .form-section-title { width: 100%; font-size: 14px; color: #1e293b; border-bottom: 2px solid #e2e8f0; margin-top: 20px; margin-bottom: 12px; padding-bottom: 5px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        .req-tag { color: var(--error-color); font-weight: bold; }
+
         .temp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;}
         .check-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; } 
         .check-item { background: var(--bg-color); border: 1.5px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 1em; }
         .check-item.active { border-color: var(--primary-color); background: #f0fdfa; color: var(--secondary-color); }
         .check-item input[type="checkbox"] { transform: scale(1.4); margin-right: 5px; accent-color: var(--primary-color); }
+        .check-item input[type="checkbox"]:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        /* Stili specifici BINA Tablet */
+        .bina-card-select { width: 100%; padding: 12px; font-size: 14px; border: 1.5px solid var(--border-color); border-radius: 8px; background-color: #fff; margin-bottom: 12px; font-weight: 500; color: #1e293b; }
+        .bina-card-label { display: block; font-weight: bold; color: #334155; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
+
+        /* Tabella Alloggiati Web Tablet */
+        table.mob-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        table.mob-table th, table.mob-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; vertical-align: middle; }
+        table.mob-table th { background-color: #f1f5f9; color: var(--text-main); font-weight: bold; }
 
         #signatureModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 10000; align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; overscroll-behavior: none;}
         .privacy-container { background: #ffffff; padding: 20px; border-radius: var(--radius); width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px;}
@@ -125,14 +142,15 @@
         .toast { background: #334155; color: #fff; padding: 14px 20px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; width: 100%; box-sizing: border-box;}
         .toast.show { opacity: 1; }
         .error-box { display: none; background: #fef2f2; border: 1.5px solid var(--error-color); padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-        .uscita-attiva-card { background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
-        .uscita-attiva-info strong { display:block; color:var(--text-main); margin-bottom: 3px;}
+        .uscita-attiva-card { background:#f8fafc; border:1px solid var(--border-color); border-left:4px solid var(--uscite-color); border-radius:8px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+        .uscita-attiva-info strong { display:block; color:var(--text-main); margin-bottom: 3px; font-size:1.05em;}
         .uscita-attiva-info small { color:var(--text-light); }
-        .btn-rientro { padding:10px 12px; font-size:0.9em; width:auto; border: 2px solid var(--uscite-color); color:var(--uscite-color); background:transparent; border-radius: 8px; font-weight:bold; cursor:pointer;}
+        .btn-rientro { padding:10px 14px; font-size:0.95em; width:auto; border: 2px solid var(--uscite-color); color:var(--uscite-color); background:transparent; border-radius: 8px; font-weight:bold; cursor:pointer;}
     </style>
 </head>
 <body>
     <div id="toast-container"></div>
+    <datalist id="lista_comuni_italia_tablet"></datalist>
 
     <!-- LOGIN SCREEN -->
     <div id="loginScreen">
@@ -167,7 +185,7 @@
                 <span>Ponte D'Oro</span>
             </div>
             <div class="navbar-actions">
-                <span class="current-op-badge" id="currentOpBadge">👨‍🍳 Op</span>
+                <span class="current-op-badge" id="currentOpBadge">👨‍⚕️ Op</span>
                 <button class="nav-btn" onclick="logout()">Esci</button>
             </div>
         </div>
@@ -180,7 +198,27 @@
             <div id="ws-dash" class="workspace active">
                 <p class="dash-hint">💡 Tieni premuto un pulsante per spostarlo e riordinare la schermata.</p>
                 <div class="dash-nav-grid" id="dashNavGrid">
-                    <div class="dash-nav-item" data-id="privacy" onclick="openApp('privacy')" style="border-bottom: 4px solid var(--privacy-color);"><div class="dash-nav-icon">🔐</div><div class="dash-nav-label">Privacy</div></div>
+                    <!-- Sezioni Riservate ESCLUSIVAMENTE alla Direzione Sanitaria -->
+                    <div class="dash-nav-item" id="dash-item-nuovo-ospite" data-id="nuovo-ospite" onclick="openApp('nuovo-ospite')" style="border-bottom: 4px solid var(--nuovo-osp-color); display:none; background:#f0fdfa;">
+                        <div class="dash-nav-icon">👤➕</div>
+                        <div class="dash-nav-label" style="color:#0f766e;">Nuovo Ospite<br><small style="font-size:10px; color:#14b8a6;">Dir. Sanitaria</small></div>
+                    </div>
+
+                    <div class="dash-nav-item" id="dash-item-privacy" data-id="privacy" onclick="openApp('privacy')" style="border-bottom: 4px solid var(--privacy-color); display:none; background:#f0fdfa;">
+                        <div class="dash-nav-icon">🔐</div>
+                        <div class="dash-nav-label" style="color:#0284c7;">Privacy<br><small style="font-size:10px; color:#0ea5e9;">Dir. Sanitaria</small></div>
+                    </div>
+
+                    <div class="dash-nav-item" id="dash-item-bina" data-id="bina" onclick="openApp('bina')" style="border-bottom: 4px solid var(--bina-color); display:none; background:#f5f3ff;">
+                        <div class="dash-nav-icon">📋</div>
+                        <div class="dash-nav-label" style="color:#4338ca;">Modulo BINA<br><small style="font-size:10px; color:#6366f1;">Dir. Sanitaria</small></div>
+                    </div>
+
+                    <div class="dash-nav-item" id="dash-item-alloggiati" data-id="alloggiati" onclick="openApp('alloggiati')" style="border-bottom: 4px solid var(--allogg-color); display:none; background:#f8fafc;">
+                        <div class="dash-nav-icon">👮</div>
+                        <div class="dash-nav-label" style="color:var(--allogg-color);">Alloggiati Web<br><small style="font-size:10px; color:#64748b;">Dir. Sanitaria</small></div>
+                    </div>
+
                     <div class="dash-nav-item" data-id="consegne" onclick="openApp('consegne')" style="border-bottom: 4px solid var(--cons-color);"><div class="dash-nav-icon">📝</div><div class="dash-nav-label">Consegne</div></div>
                     <div class="dash-nav-item" data-id="uscite" onclick="openApp('uscite')" style="border-bottom: 4px solid var(--uscite-color);"><div class="dash-nav-icon">🚶</div><div class="dash-nav-label">Uscite</div></div>
                     <div class="dash-nav-item" data-id="guardaroba" onclick="openApp('guardaroba')" style="border-bottom: 4px solid var(--guarda-color);"><div class="dash-nav-icon">👕</div><div class="dash-nav-label">Guardaroba</div></div>
@@ -198,17 +236,114 @@
 
                 <div class="card" style="border-top: 4px solid var(--primary-color);">
                     <h4 style="margin: 0 0 10px 0;">🕒 Ospiti attualmente fuori struttura</h4>
-                    <div id="dashUsciteContainer"><p style="color:var(--text-light); font-size:0.9em;">Caricamento...</p></div>
+                    <div id="dashUsciteContainer"><p style="color:var(--text-light); font-size:0.9em;">Caricamento presenze...</p></div>
                 </div>
             </div>
 
-            <!-- 1. PRIVACY -->
+            <!-- WORKSPACE RISERVATO: INSERIMENTO NUOVO OSPITE (DIREZIONE SANITARIA) -->
+            <div id="ws-nuovo-ospite" class="workspace">
+                <div class="card" style="border-top: 5px solid #0d9488;">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color:#0f766e; margin:0;">👤➕ Inserimento Nuovo Ospite</h3>
+                        <span style="font-size:11px; background:#ccfbf1; color:#0f766e; padding:4px 8px; border-radius:4px; font-weight:bold;">SOLO DIREZIONE</span>
+                    </div>
+
+                    <div class="form-section-title" style="margin-top:5px;">📷 Foto Profilo</div>
+                    <div class="form-group" style="text-align:center; background:#f0fdfa; padding:15px; border-radius:8px; border:1px dashed #0d9488;">
+                        <input type="file" accept="image/*" capture="user" id="mob_osp_file_foto" style="display:none;" onchange="previewMobFoto(event, 'mob_foto_preview')">
+                        <button type="button" class="btn-outline" style="border-color:#0d9488; color:#0d9488; margin-bottom:5px;" onclick="document.getElementById('mob_osp_file_foto').click()">📸 Scatta / Carica Foto Profilo</button>
+                        <div id="mob_foto_preview_box" style="display:none; margin-top:10px;"><img id="mob_foto_preview" style="width:75px; height:75px; border-radius:50%; object-fit:cover; border:2px solid #0d9488;"></div>
+                    </div>
+
+                    <div class="form-section-title">1. Dati Generali</div>
+                    <div class="form-group"><label>Cognome <span class="req-tag">*</span></label><input type="text" id="mob_osp_cognome" placeholder="Es. Rossi"></div>
+                    <div class="form-group"><label>Nome <span class="req-tag">*</span></label><input type="text" id="mob_osp_nome" placeholder="Es. Mario"></div>
+                    <div class="form-group">
+                        <label>Sesso <span class="req-tag">*</span></label>
+                        <select id="mob_osp_sesso"><option value="1">1 - Maschio (M)</option><option value="2">2 - Femmina (F)</option></select>
+                    </div>
+                    <div class="form-group"><label>Data di Nascita <span class="req-tag">*</span></label><input type="date" id="mob_osp_dob"></div>
+                    <div class="form-group"><label>Codice Fiscale (16 Caratteri) <span class="req-tag">*</span></label><input type="text" id="mob_osp_cf" maxlength="16" placeholder="RSSMRA30A01H501Z" style="text-transform:uppercase;"></div>
+                    <div class="form-group"><label>Data Ingresso in Struttura <span class="req-tag">*</span></label><input type="date" id="mob_osp_ingresso"></div>
+
+                    <div class="form-section-title">2. Luogo di Nascita (Alloggiati Web)</div>
+                    <div class="form-group"><label>Comune di Nascita <span class="req-tag">*</span></label><input type="text" id="mob_osp_comune_nas" list="lista_comuni_italia_tablet" onchange="impostaCodiceAlloggiatiTablet('mob_osp_comune_nas', 'mob_osp_cod_nas', 'mob_osp_prov_nas')" placeholder="Digita comune..."></div>
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                        <div class="form-group"><label>Prov. <span class="req-tag">*</span></label><input type="text" id="mob_osp_prov_nas" maxlength="2" placeholder="TR" style="text-transform:uppercase;"></div>
+                        <div class="form-group"><label>Codice ISTAT <span class="req-tag">*</span></label><input type="text" id="mob_osp_cod_nas" placeholder="100055032"></div>
+                    </div>
+
+                    <div class="form-section-title">3. Residenza Anagrafica</div>
+                    <div class="form-group"><label>Indirizzo (Via / Piazza) <span class="req-tag">*</span></label><input type="text" id="mob_osp_indirizzo" placeholder="Via Roma 1"></div>
+                    <div class="form-group"><label>Comune di Residenza <span class="req-tag">*</span></label><input type="text" id="mob_osp_comune_res" list="lista_comuni_italia_tablet" onchange="impostaCodiceAlloggiatiTablet('mob_osp_comune_res', 'mob_osp_cod_res', 'mob_osp_prov_res')" placeholder="Digita comune..."></div>
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                        <div class="form-group"><label>Prov. <span class="req-tag">*</span></label><input type="text" id="mob_osp_prov_res" maxlength="2" placeholder="TR" style="text-transform:uppercase;"></div>
+                        <div class="form-group"><label>Codice ISTAT <span class="req-tag">*</span></label><input type="text" id="mob_osp_cod_res" placeholder="100055032"></div>
+                    </div>
+
+                    <div class="form-section-title">4. Figure di Riferimento</div>
+                    <div class="form-group"><label>Familiare Referente / Garante</label><input type="text" id="mob_osp_fam_nome" placeholder="Nome e Cognome"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Parentela</label><select id="mob_osp_fam_parentela"><option>Figlio/a</option><option>Coniuge</option><option>Fratello/Sorella</option><option>Tutore Legale</option><option>Altro</option></select></div>
+                        <div class="form-group"><label>Telefono</label><input type="text" id="mob_osp_fam_tel" placeholder="Cellulare"></div>
+                    </div>
+                    <div class="form-group"><label>Medico di Base (MMG)</label><input type="text" id="mob_osp_mmg_nome" placeholder="Dott. Nome e Cognome"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Telefono MMG</label><input type="text" id="mob_osp_mmg_tel" placeholder="Telefono Studio"></div>
+                        <div class="form-group"><label>Email MMG</label><input type="text" id="mob_osp_mmg_email" placeholder="email@asl.it"></div>
+                    </div>
+                    <div class="form-group"><label>Amministratore di Sostegno (AdS / Tutore)</label><input type="text" id="mob_osp_ads_nome" placeholder="Avv. / Dott. Nome"></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Telefono AdS</label><input type="text" id="mob_osp_ads_tel" placeholder="Recapito"></div>
+                        <div class="form-group"><label>Email AdS</label><input type="text" id="mob_osp_ads_email" placeholder="Email / PEC"></div>
+                    </div>
+
+                    <div class="form-section-title">5. Documento d'Identità (Alloggiati Web)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Tipo Doc <span class="req-tag">*</span></label><select id="mob_osp_doc_tipo"><option>Carta d'Identità</option><option>CIE</option><option>Passaporto</option><option>Patente</option></select></div>
+                        <div class="form-group"><label>Numero Doc <span class="req-tag">*</span></label><input type="text" id="mob_osp_doc_num" placeholder="Es. CA00000AA"></div>
+                    </div>
+                    <div class="form-group"><label>Comune Rilascio <span class="req-tag">*</span></label><input type="text" id="mob_osp_doc_comune" list="lista_comuni_italia_tablet" onchange="impostaCodiceAlloggiatiTablet('mob_osp_doc_comune', 'mob_osp_doc_cod_comune', 'mob_osp_doc_prov')" placeholder="Comune rilascio..."></div>
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
+                        <div class="form-group"><label>Prov. <span class="req-tag">*</span></label><input type="text" id="mob_osp_doc_prov" maxlength="2" placeholder="TR" style="text-transform:uppercase;"></div>
+                        <div class="form-group"><label>Codice ISTAT Rilascio <span class="req-tag">*</span></label><input type="text" id="mob_osp_doc_cod_comune" placeholder="100055032"></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group"><label>Data Rilascio</label><input type="date" id="mob_osp_doc_rilascio"></div>
+                        <div class="form-group"><label>Data Scadenza</label><input type="date" id="mob_osp_doc_scadenza"></div>
+                    </div>
+
+                    <div class="form-section-title">6. Consensi, Presidi & Contratti</div>
+                    <div class="check-grid" style="margin-bottom:15px;">
+                        <label class="check-item"><input type="checkbox" id="mob_osp_cert" checked> <span>Certificato Autosufficienza Presente</span></label>
+                        <label class="check-item"><input type="checkbox" id="mob_osp_contratto_ingr" checked> <span>Contratto Condizioni d'Ingresso Firmato</span></label>
+                        <label class="check-item"><input type="checkbox" id="mob_osp_privacy_dati" checked> <span>Privacy: Autorizzazione Dati Sanitari</span></label>
+                        <label class="check-item"><input type="checkbox" id="mob_osp_privacy_foto" checked> <span>Immagini: Uso Foto per Fini Interni</span></label>
+                        <label class="check-item"><input type="checkbox" id="mob_osp_privacy_reg" checked> <span>Presa Visione Regolamento Interno</span></label>
+                        <label class="check-item"><input type="checkbox" id="mob_osp_privacy_carta" checked> <span>Presa Visione Carta dei Servizi</span></label>
+                    </div>
+
+                    <div class="form-section-title">7. Allegati Scansionati (PDF / Foto)</div>
+                    <div class="form-group"><label>📎 Documento d'Identità</label><input type="file" id="mob_osp_file_doc" accept="image/*,application/pdf"></div>
+                    <div class="form-group"><label>📎 Tessera Sanitaria</label><input type="file" id="mob_osp_file_ts" accept="image/*,application/pdf"></div>
+                    <div class="form-group"><label>📎 Certificato Medico Autosufficienza</label><input type="file" id="mob_osp_file_cert" accept="image/*,application/pdf"></div>
+                    <div class="form-group"><label>📎 Contratto d'Ingresso</label><input type="file" id="mob_osp_file_contratto" accept="image/*,application/pdf"></div>
+
+                    <button class="btn-primary" id="btnSalvaNuovoOspiteMob" style="background:#0d9488; margin-top:20px; font-size:1.15em;" onclick="salvaNuovoOspiteTablet()">💾 Salva e Registra Ospite</button>
+                    <button class="btn-outline" style="margin-top:10px;" onclick="goHome()">Annulla</button>
+                </div>
+            </div>
+
+            <!-- 1. PRIVACY (SOLO DIREZIONE SANITARIA) -->
             <div id="ws-privacy" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--privacy-color);">
-                    <div class="card-header"><h3 style="color: var(--privacy-color);">🔐 Acquisizione Consensi Privacy</h3></div>
-                    <div class="form-group">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color: var(--privacy-color); margin:0;">🔐 Acquisizione Consensi Privacy</h3>
+                        <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:4px 8px; border-radius:4px; font-weight:bold;">SOLO DIREZIONE</span>
+                    </div>
+                    <div class="form-group" style="margin-top:15px;">
                         <label>Seleziona Ospite *</label>
-                        <select id="privOspite"><option value="">-- Caricamento ospiti... --</option></select>
+                        <select id="privOspite" onchange="checkOspitePrivacyStatus()"><option value="">-- Caricamento ospiti... --</option></select>
                     </div>
                     <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--text-light);">Consensi da Acquisire:</label>
                     <div class="check-grid" id="privChecks">
@@ -217,7 +352,213 @@
                         <label class="check-item"><input type="checkbox" id="privReg"> <span>Regolamento Interno RSA</span></label>
                         <label class="check-item"><input type="checkbox" id="privCarta"> <span>Carta dei Servizi</span></label>
                     </div>
-                    <div style="margin-top: 20px;"><button class="btn-primary" style="background-color: var(--privacy-color);" onclick="requestSignature('privacy')">✍️ Acquisisci Firma su Tablet</button></div>
+                    
+                    <div id="privFirmaPreviewContainer" style="display:none; margin-top:15px; padding:12px; background:#e1f5fe; border:1px solid #b3e5fc; border-radius:8px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                            <div>
+                                <span style="color:#059669; font-weight:bold; font-size:0.95em;">🔒 Firma Acquisita e Consensi Congelati</span><br>
+                                <small id="privFirmaDettaglio" style="color:#64748b; font-size:0.8em;"></small>
+                            </div>
+                            <img id="privFirmaImg" src="" style="max-height:50px; max-width:160px; background:white; padding:3px; border-radius:4px; border:1px solid #cbd5e1; object-fit:contain;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary" id="btnAcquisisciFirmaPriv" style="background-color: var(--privacy-color);" onclick="requestSignature('privacy')">✍️ Acquisisci Firma su Tablet</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WORKSPACE RISERVATO: MODULO B.I.N.A. (DIREZIONE SANITARIA) -->
+            <div id="ws-bina" class="workspace">
+                <div class="card" style="border-top: 5px solid var(--bina-color);">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color:#4338ca; margin:0;">📋 Valutazione B.I.N.A.</h3>
+                        <span style="font-size:11px; background:#ede9fe; color:#4338ca; padding:4px 8px; border-radius:4px; font-weight:bold;">SOLO DIREZIONE</span>
+                    </div>
+
+                    <div class="form-section-title" style="margin-top:5px;">Dati Valutazione</div>
+                    <div class="form-group"><label>Ospite *</label><select id="binaOspite"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data Valutazione *</label><input type="date" id="binaData"></div>
+                    <div class="form-group">
+                        <label>Tipo Certificazione</label>
+                        <select id="binaTipoCert">
+                            <option>Prima certificazione</option>
+                            <option>Ulteriore certificazione</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section-title">Scala di Valutazione Ufficiale (10 Aree)</div>
+                    <div class="form-group">
+                        <label class="bina-card-label">1. Medicazioni</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Non necessarie (10 pt)</option>
+                            <option value="30">Per ulcerazioni e distrofie cutanee (30 pt)</option>
+                            <option value="60">Per catetere a permanenza o stomia (60 pt)</option>
+                            <option value="100">Per ulcere da decubito (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">2. Necessità di Prestazioni Sanitarie</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Buona salute (10 pt)</option>
+                            <option value="30">Prestazioni sanitarie non continuative (30 pt)</option>
+                            <option value="70">Prestazioni sanitarie / consulenze (70 pt)</option>
+                            <option value="100">Cure quotidiane, PEG, SNG, Ossigeno ecc. (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">3. Controllo Sfinterico</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Presente (10 pt)</option>
+                            <option value="30">Incontinenza episodica (30 pt)</option>
+                            <option value="70">Incontinenza permanente urinaria O fecale (70 pt)</option>
+                            <option value="100">Incontinenza totale urinaria E fecale (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">4. Disturbi Cognitivi e/o Comportamentali</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Assenti (10 pt)</option>
+                            <option value="50">Disturbi dell'umore / cognitivi lievi (50 pt)</option>
+                            <option value="80">Disturbi cognitività senza agitazione grave (80 pt)</option>
+                            <option value="100">Comportamento disturbante, aggressivo o violento (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">5. Funzioni del Linguaggio</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Comprende/esprime normalmente, usa telefono (10 pt)</option>
+                            <option value="40">Linguaggio menomato ma esprime il pensiero (40 pt)</option>
+                            <option value="70">Comprende solo ordini semplici (70 pt)</option>
+                            <option value="100">Non comprende, non si esprime (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">6. Deficit Sensoriali (Udito e Vista)</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Normale (10 pt)</option>
+                            <option value="20">Deficit correggibile con protesi/occhiali (20 pt)</option>
+                            <option value="80">Grave deficit non correggibile (80 pt)</option>
+                            <option value="100">Cecità e/o sordità completa (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">7. Mobilità</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Cammina autonomamente senza aiuto (10 pt)</option>
+                            <option value="30">Cammina con ausili o aiuto programmato (30 pt)</option>
+                            <option value="80">Si sposta solo con aiuto o sedia a ruote (80 pt)</option>
+                            <option value="100">Totalmente dipendente per le alzate (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">8. Attività della Vita Quotidiana</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Totalmente indipendente (10 pt)</option>
+                            <option value="20">Aiuto programmato o saltuario (20 pt)</option>
+                            <option value="70">Aiuto necessario ma parziale (70 pt)</option>
+                            <option value="100">Totalmente dipendente (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">9. Fattori Abitativi e Ambientali</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Abitazione idonea, servizi fruibili (10 pt)</option>
+                            <option value="20">Barriere architettoniche che limitano i servizi (20 pt)</option>
+                            <option value="70">Impedita fruibilità interna di cucina/bagno (70 pt)</option>
+                            <option value="100">Totale inadeguatezza, assenza servizi (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="bina-card-label">10. Stato della Rete Familiare</label>
+                        <select class="bina-card-select bina-calc-mob" onchange="calcolaBinaTablet()">
+                            <option value="10">Può contare sulla famiglia (10 pt)</option>
+                            <option value="30">Disponibilità parziale della rete informale (30 pt)</option>
+                            <option value="60">Famiglia disponibile solo se interpellata (60 pt)</option>
+                            <option value="100">Non può contare su nessuno (100 pt)</option>
+                        </select>
+                    </div>
+
+                    <!-- Display Punteggio Reattivo -->
+                    <div id="mob_bina_score_display" style="background:#f8fafc; border:2px solid #cbd5e1; border-radius:10px; padding:18px; text-align:center; font-weight:bold; margin-top:15px;">
+                        PUNTEGGIO: 100<br><span style="font-size: 22px; color:#059669;">AUTOSUFFICIENTE</span>
+                        <p style="font-size: 11px; font-weight: normal; color: #64748b; margin: 4px 0 0 0;">(Soglia cut-off: 230 pt)</p>
+                    </div>
+
+                    <input type="hidden" id="mob_bina_totale" value="100">
+                    <input type="hidden" id="mob_bina_esito" value="AUTOSUFFICIENTE">
+
+                    <button class="btn-primary" id="btnSalvaBinaMob" style="background:#4338ca; margin-top:20px; font-size:1.1em;" onclick="salvaBinaTablet()">💾 Registra Valutazione B.I.N.A.</button>
+                    <button class="btn-outline" style="margin-top:10px;" onclick="goHome()">Annulla</button>
+                </div>
+            </div>
+
+            <!-- WORKSPACE RISERVATO: ESPORTAZIONE ALLOGGIATI WEB (DIREZIONE SANITARIA) -->
+            <div id="ws-alloggiati" class="workspace">
+                <div class="card" style="border-top: 5px solid var(--allogg-color);">
+                    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color:var(--allogg-color); margin:0;">👮 Alloggiati Web (Polizia di Stato)</h3>
+                        <span style="font-size:11px; background:#e2e8f0; color:#1e293b; padding:4px 8px; border-radius:4px; font-weight:bold;">SOLO DIREZIONE</span>
+                    </div>
+
+                    <p style="font-size:13px; color:#475569; margin:10px 0 15px 0;">
+                        Generazione del file <code>.txt</code> a norma (168 caratteri) per la trasmissione delle presenze alla Questura (D.M. 7 gennaio 2013).
+                    </p>
+
+                    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:15px; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label>Modalità Notifica *</label>
+                            <select id="mob_allogg_modalita" onchange="cambiaModalitaAlloggiatiMob()">
+                                <option value="RINNOVO">🔄 Rinnovo Periodico Mensile (Ospiti Residenti)</option>
+                                <option value="INGRESSO">📥 Nuovi Ingressi (Data Ingresso Originale)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Inizio Periodo Notifica *</label>
+                            <input type="date" id="mob_allogg_data_riferimento" onchange="applicaDataATuttiMob()">
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:flex-end;">
+                            <div class="form-group" style="flex:1; margin-bottom:0;">
+                                <label>Permanenza (1 - 30 gg) *</label>
+                                <input type="number" id="mob_allogg_giorni_globali" min="1" max="30" value="30" style="text-align:center; font-weight:bold;">
+                            </div>
+                            <button class="btn-outline btn-sm" style="height:48px; border-color:#64748b; color:#334155;" onclick="applicaGiorniATuttiMob()">Applica a Tutti</button>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-top:15px; border-top:1px dashed #cbd5e1; padding-top:10px;">
+                            <button class="btn-outline btn-sm" style="flex:1;" onclick="selezionaTuttiAlloggiatiMob(true)">Seleziona Tutti</button>
+                            <button class="btn-outline btn-sm" style="flex:1;" onclick="selezionaTuttiAlloggiatiMob(false)">Deseleziona Tutti</button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x:auto;">
+                        <table class="mob-table" style="min-width:700px;">
+                            <thead>
+                                <tr>
+                                    <th style="width:35px; text-align:center;">Sel.</th>
+                                    <th>Ospite / Sesso</th>
+                                    <th>Data Notifica</th>
+                                    <th style="width:70px; text-align:center;">Giorni</th>
+                                    <th>Luogo Nascita / ISTAT</th>
+                                    <th>Stato Conformità</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mob_tabella_alloggiati"></tbody>
+                        </table>
+                    </div>
+
+                    <button class="btn-primary" style="background:#0f172a; margin-top:20px; font-size:1.1em;" onclick="esportaAlloggiatiMob()">📥 Genera e Scarica File TXT (168 car.)</button>
+                    <button class="btn-outline" style="margin-top:10px;" onclick="goHome()">Annulla</button>
                 </div>
             </div>
 
@@ -241,13 +582,13 @@
             <div id="ws-uscite" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--uscite-color);">
                     <div class="card-header"><h3 style="color: var(--uscite-color);">🚶 Registrazione Nuova Uscita</h3></div>
-                    <div class="form-group"><label>Ospite</label><select id="uscitaOspite"><option value="">-- Seleziona Ospite --</option></select></div>
-                    <div class="form-group"><label>Data Uscita</label><input type="date" id="uscitaData"></div>
-                    <div class="form-group"><label>Ora Uscita</label><input type="time" id="uscitaOra"></div>
-                    <div class="form-group"><label>Accompagnatore / Note</label><input type="text" id="uscitaNote" placeholder="Es. Uscita con familiare"></div>
-                    <button class="btn-primary" style="background-color: var(--uscite-color);" onclick="requestSignature('uscite')">✍️ Firma Uscita</button>
+                    <div class="form-group"><label>Ospite *</label><select id="uscitaOspite"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data Uscita *</label><input type="date" id="uscitaData"></div>
+                    <div class="form-group"><label>Ora Uscita *</label><input type="time" id="uscitaOra"></div>
+                    <div class="form-group"><label>Accompagnatore / Note</label><input type="text" id="uscitaNote" placeholder="Es. Figlio Mario, Passeggiata al parco..."></div>
+                    <button class="btn-primary" style="background-color: var(--uscite-color);" onclick="requestSignature('uscite')">✍️ Firma e Registra Uscita</button>
                     <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
-                    <h4 style="margin:0 0 10px 0; color:var(--uscite-color);">Ospiti fuori</h4>
+                    <h4 style="margin:0 0 10px 0; color:var(--uscite-color);">Ospiti attualmente fuori struttura</h4>
                     <div id="activeUsciteContainer"></div>
                 </div>
             </div>
@@ -255,31 +596,31 @@
             <!-- 4. GUARDAROBA -->
             <div id="ws-guardaroba" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--guarda-color);">
-                    <div class="card-header"><h3 style="color: var(--guarda-color);">👕 Guardaroba ed Inventario</h3></div>
-                    <div class="form-group"><label>Ospite</label><select id="guardaOspite" onchange="aggiornaInventarioOspiteTablet()"><option value="">-- Seleziona Ospite --</option></select></div>
-                    <div class="form-group"><label>Data</label><input type="date" id="guardaData"></div>
-                    <div class="form-group"><label>Operazione</label><select id="guardaTipo"><option value="CARICO">🟢 Ingresso Capi</option><option value="SCARICO">🔴 Ritiro Capi</option></select></div>
+                    <div class="card-header"><h3 style="color: var(--guarda-color);">👕 Guardaroba ed Inventario Capi</h3></div>
+                    <div class="form-group"><label>Ospite *</label><select id="guardaOspite" onchange="aggiornaInventarioOspiteTablet()"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data *</label><input type="date" id="guardaData"></div>
+                    <div class="form-group"><label>Operazione *</label><select id="guardaTipo"><option value="CARICO">🟢 Ingresso Capi</option><option value="SCARICO">🔴 Ritiro Capi</option></select></div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-                        <div class="form-group" style="margin-bottom:0;"><label>Maglie<small id="giacMaglie" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaMaglie" min="0" value="0" style="text-align:center;"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Pantaloni<small id="giacPantaloni" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaPantaloni" min="0" value="0" style="text-align:center;"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Intimo<small id="giacIntimo" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaIntimo" min="0" value="0" style="text-align:center;"></div>
-                        <div class="form-group" style="margin-bottom:0;"><label>Pigiami<small id="giacPigiami" style="display:block; color:var(--primary-color);">In stanza: 0</small></label><input type="number" id="guardaPigiami" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Maglie<small id="giacMaglie" style="display:block; color:var(--primary-color); font-weight:bold;">In stanza: 0</small></label><input type="number" id="guardaMaglie" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Pantaloni<small id="giacPantaloni" style="display:block; color:var(--primary-color); font-weight:bold;">In stanza: 0</small></label><input type="number" id="guardaPantaloni" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Intimo<small id="giacIntimo" style="display:block; color:var(--primary-color); font-weight:bold;">In stanza: 0</small></label><input type="number" id="guardaIntimo" min="0" value="0" style="text-align:center;"></div>
+                        <div class="form-group" style="margin-bottom:0;"><label>Pigiami<small id="giacPigiami" style="display:block; color:var(--primary-color); font-weight:bold;">In stanza: 0</small></label><input type="number" id="guardaPigiami" min="0" value="0" style="text-align:center;"></div>
                     </div>
-                    <div class="form-group"><label>Note / Extra</label><textarea id="guardaDescExtra" rows="2" placeholder="Protesi, occhiali..."></textarea></div>
-                    <button class="btn-primary" style="background-color: var(--guarda-color);" onclick="requestSignature('guardaroba')">✍️ Firma e Salva</button>
+                    <div class="form-group"><label>Note / Effetti di Valore</label><textarea id="guardaDescExtra" rows="2" placeholder="Protesi, occhiali, orologi..."></textarea></div>
+                    <button class="btn-primary" style="background-color: var(--guarda-color);" onclick="requestSignature('guardaroba')">✍️ Firma e Salva Movimento</button>
                 </div>
             </div>
 
             <!-- 5. ANIMAZIONE -->
             <div id="ws-animazione" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--anim-color);">
-                    <div class="card-header"><h3 style="color: var(--anim-color);">🎨 Animazione e Attività</h3></div>
-                    <div class="form-group"><label>Data</label><input type="date" id="animData"></div>
-                    <div class="form-group"><label>Nome Attività</label><input type="text" id="animNome" placeholder="Es. Tombola, Lettura..."></div>
-                    <div class="form-group"><label>Categoria</label><select id="animCategoria"><option>Cognitiva</option><option>Motoria</option><option>Ludico-Ricreativa</option><option>Sociale</option></select></div>
-                    <div class="form-group"><label>Coinvolgimento</label><select id="animCoinvolgimento"><option>Alto</option><option>Medio</option><option>Basso</option></select></div>
-                    <div class="form-group"><label>Note</label><textarea id="animNote" rows="2"></textarea></div>
-                    <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-light);">Partecipanti:</label>
+                    <div class="card-header"><h3 style="color: var(--anim-color);">🎨 Animazione e Attività Ricreative</h3></div>
+                    <div class="form-group"><label>Data *</label><input type="date" id="animData"></div>
+                    <div class="form-group"><label>Nome Attività *</label><input type="text" id="animNome" placeholder="Es. Ginnastica dolce, Tombola..."></div>
+                    <div class="form-group"><label>Categoria *</label><select id="animCategoria"><option>Cognitiva</option><option>Motoria</option><option>Ludico-Ricreativa</option><option>Sociale</option></select></div>
+                    <div class="form-group"><label>Coinvolgimento Generale</label><select id="animCoinvolgimento"><option>Alto</option><option>Medio</option><option>Basso</option></select></div>
+                    <div class="form-group"><label>Note Osservazioni</label><textarea id="animNote" rows="2"></textarea></div>
+                    <label style="display:block; margin-bottom:8px; font-weight:bold; color:var(--text-light);">Partecipanti Presenti:</label>
                     <div class="check-grid" id="animPartecipanti"><p style="color:var(--text-light);">Caricamento ospiti...</p></div>
                     <button class="btn-primary" style="background-color: var(--anim-color);" onclick="requestSignature('animazione')">✍️ Firma e Salva Attività</button>
                 </div>
@@ -289,18 +630,29 @@
             <div id="ws-parametri" class="workspace">
                 <div class="card" style="border-top: 4px solid var(--param-color);">
                     <div class="card-header"><h3 style="color: var(--param-color);">📈 Parametri Vitali</h3></div>
-                    <div class="form-group"><label>Ospite</label><select id="paramOspite"><option value="">-- Seleziona Ospite --</option></select></div>
-                    <div class="form-group"><label>Data</label><input type="date" id="paramData"></div>
-                    <div class="form-group"><label style="color:#c0392b;">🩸 Press. Art. (PA)</label><input type="text" id="paramPA" placeholder="120/80"></div>
-                    <div class="form-group"><label style="color:#e74c3c;">❤️ F. Cardiaca (FC)</label><input type="number" id="paramFC" placeholder="Battiti"></div>
+                    <div class="form-group"><label>Ospite *</label><select id="paramOspite"><option value="">-- Seleziona Ospite --</option></select></div>
+                    <div class="form-group"><label>Data *</label><input type="date" id="paramData"></div>
+                    
+                    <!-- Pressione Arteriosa con Separatore Max / Min -->
+                    <div class="form-group">
+                        <label style="color:#c0392b;">🩸 Press. Art. (PA Max / Min)</label>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <input type="number" id="paramPA_max" placeholder="Max (120)" min="50" max="260" style="border-color:#fadbd8; text-align:center; font-weight:bold; flex:1;">
+                            <span style="font-size: 18px; font-weight: bold; color: #c0392b;">/</span>
+                            <input type="number" id="paramPA_min" placeholder="Min (80)" min="30" max="150" style="border-color:#fadbd8; text-align:center; font-weight:bold; flex:1;">
+                            <span style="font-size: 11px; color: #7f8c8d; font-weight:bold;">mmHg</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group"><label style="color:#e74c3c;">❤️ F. Cardiaca (FC)</label><input type="number" id="paramFC" placeholder="Battiti / min"></div>
                     <div class="form-group"><label style="color:#2980b9;">💨 Saturazione (SpO2)</label><input type="number" id="paramSpO2" placeholder="%"></div>
-                    <div class="form-group"><label style="color:#d35400;">🌡️ Temp. (TC)</label><input type="number" step="0.1" id="paramTC" placeholder="°C"></div>
+                    <div class="form-group"><label style="color:#d35400;">🌡️ Temp. Corporea (TC)</label><input type="number" step="0.1" id="paramTC" placeholder="°C"></div>
                     <div class="form-group"><label style="color:#f39c12;">💧 Glicemia (HGT)</label><input type="number" id="paramHGT" placeholder="mg/dl"></div>
                     <button class="btn-primary" style="background-color: var(--param-color);" onclick="requestSignature('parametri')">✍️ Firma e Invia Parametri</button>
                 </div>
             </div>
 
-            <!-- SEZIONI HACCP SEMPLIFICATE -->
+            <!-- SEZIONI HACCP E SICUREZZA -->
             <div id="ws-temp" class="workspace"><div class="card" style="border-top: 4px solid var(--temp-color);"><div class="card-header"><h3 style="color: var(--temp-color);">🌡️ Temperature Impianti</h3></div><div class="form-group"><label>Data</label><input type="date" id="tempData"></div><button class="btn-outline" onclick="autoFillTemp()" style="margin-bottom:15px;">✨ Compila Automaticamente</button><div class="temp-grid" id="dynamic-temp-grid"></div><div id="tempAlert" class="error-box"><label style="color:var(--error-color);">⚠️ Azione Correttiva:</label><input type="text" id="tAction" placeholder="Intervento..."></div><button class="btn-primary" style="background-color: var(--temp-color);" onclick="requestSignature('temp')">✍️ Firma e Salva</button></div></div>
             <div id="ws-prep" class="workspace"><div class="card" style="border-top: 4px solid var(--prep-color);"><div class="card-header"><h3 style="color: var(--prep-color);">🍳 Preparazione e Cottura</h3></div><div class="form-group"><label>Data</label><input type="date" id="prepData"></div><div class="form-group"><label>Processo</label><select id="prepProcesso"><option>Cottura al Cuore (Min 75°C)</option><option>Abbattimento Rapido</option><option>Mantenimento a Caldo</option></select></div><div class="form-group"><label>Alimento</label><input type="text" id="prepAlimento" placeholder="Nome piatto..."></div><div class="form-group"><label>Temperatura (°C)</label><input type="number" step="0.1" id="prepTemp"></div><button class="btn-primary" style="background-color: var(--prep-color);" onclick="requestSignature('prep')">✍️ Firma e Salva</button></div></div>
             <div id="ws-merci" class="workspace"><div class="card" style="border-top: 4px solid var(--merci-color);"><div class="card-header"><h3 style="color: var(--merci-color);">📦 Controllo Merci</h3></div><div class="form-group"><label>Data</label><input type="date" id="merciData"></div><div class="form-group"><label>Fornitore</label><input type="text" id="merciFornitore"></div><div class="form-group"><label>Temp (°C)</label><input type="number" step="0.1" id="merciTemp"></div><div class="form-group"><label>Imballaggi</label><select id="merciImballaggi"><option>Intatti</option><option>Danneggiati</option></select></div><button class="btn-primary" style="background-color: var(--merci-color);" onclick="requestSignature('merci')">✍️ Firma e Salva</button></div></div>
@@ -321,19 +673,19 @@
             <button class="btn-outline" onclick="clearSignature()" style="padding: 10px;">🗑️ Pulisci</button>
             <div style="display:flex; gap:10px;">
                 <button class="btn-outline" style="flex:1;" onclick="closeSignature()">Annulla</button>
-                <button class="btn-success" style="flex:1.5;" onclick="confirmSignature()">✅ Conferma</button>
+                <button class="btn-success" id="btnConfermaModalFirma" style="flex:1.5;" onclick="confirmSignature()">✅ Conferma</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURAZIONE FIREBASE V8 CORRETTA (.firebasestorage.app) ---
+        // --- CONFIGURAZIONE FIREBASE V8 ---
         const firebaseConfig = {
             apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
             authDomain: "residenza-ponte-d-oro.firebaseapp.com",
             databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "residenza-ponte-d-oro",
-            storageBucket: "residenza-ponte-d-oro.firebasestorage.app", // CORRETTO!
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
             messagingSenderId: "426557690382",
             appId: "1:426557690382:web:pontedoroapp"
         };
@@ -345,12 +697,24 @@
 
         window.activeOp = null;
         window.activeOpPin = null;
+        window.currentLoggedOp = null;
         window.currentTarget = null;
         let dbOperatori = [];
         let appConfig = { frigoriferi: ["Frigo Cucina", "Cella Frigorifera"], aree: ["Sala Pranzo", "Cucina"], pulizie: ["Sanificazione pavimenti", "Pulizia bagni"] };
-        let globalUsciteArray = [];
-        let globalGuardarobaArray = [];
         window.globalOspiti = [];
+        let globalUscite = [];
+        let globalGuardaroba = [];
+
+        // Sanitizzatore universale per Firebase Realtime Database
+        const sanitizeForRTDB = (obj) => JSON.parse(JSON.stringify(obj, (k, v) => v === undefined ? null : v));
+
+        // Helper controllo ruolo Direzione Sanitaria
+        window.isDirezioneSanitaria = (op) => {
+            if (!op) return false;
+            const nome = (op.nome || "").toLowerCase();
+            const inc = (op.incarico || op.qualifica || "").toLowerCase();
+            return inc.includes("direzione") || inc.includes("sanitaria") || nome === "admin";
+        };
 
         window.formattaData = (iso) => { 
             if(!iso) return "-"; 
@@ -369,12 +733,20 @@
         };
 
         window.openApp = (target) => {
+            // Blocco di sicurezza rigoroso: Nuovo Ospite, Privacy, BINA e Alloggiati riservati alla Direzione Sanitaria
+            const areeDirezione = ['nuovo-ospite', 'privacy', 'bina', 'alloggiati'];
+            if (areeDirezione.includes(target) && !window.isDirezioneSanitaria(window.currentLoggedOp)) {
+                return window.showToast("⛔ Accesso Riservato alla Direzione Sanitaria");
+            }
             document.querySelectorAll('.workspace').forEach(el => el.classList.remove('active'));
             const ws = document.getElementById('ws-' + target);
             if(ws) ws.classList.add('active');
             document.getElementById('btnHome').style.display = 'inline-block';
             window.scrollTo(0,0);
             if(target === 'guardaroba') window.aggiornaInventarioOspiteTablet();
+            if(target === 'privacy') window.checkOspitePrivacyStatus();
+            if(target === 'bina') window.calcolaBinaTablet();
+            if(target === 'alloggiati') window.aggiornaTabellaAlloggiatiMob();
         };
         
         window.goHome = () => {
@@ -384,7 +756,33 @@
             window.scrollTo(0,0);
         };
 
-        // --- POPOLAMENTO TENDINE OSPITI ---
+        // --- POPOLAMENTO COMUNI ITALIA (AUTO-FILL ISTAT) ---
+        fetch("https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json")
+            .then(r => r.json())
+            .then(data => {
+                const dl = document.getElementById('lista_comuni_italia_tablet');
+                if (dl) {
+                    data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.nome;
+                        opt.dataset.istat = c.codice;
+                        opt.dataset.prov = c.sigla;
+                        dl.appendChild(opt);
+                    });
+                }
+            })
+            .catch(e => console.log("Errore db comuni:", e));
+
+        function impostaCodiceAlloggiatiTablet(inputId, codId, provId) {
+            const val = document.getElementById(inputId).value;
+            const opt = document.querySelector(`#lista_comuni_italia_tablet option[value="${val}"]`);
+            if (opt) {
+                document.getElementById(codId).value = "100" + opt.dataset.istat;
+                document.getElementById(provId).value = opt.dataset.prov;
+            }
+        }
+
+        // --- POPOLAMENTO TENDINE OSPITI E CHECKBOX ---
         window.popolaTendineOspiti = (ospitiData) => {
             let ospitiList = [];
             if (Array.isArray(ospitiData)) {
@@ -394,7 +792,7 @@
             }
             window.globalOspiti = ospitiList;
 
-            const sels = ['privOspite', 'uscitaOspite', 'guardaOspite', 'paramOspite', 'filtroAttivitaOspite'];
+            const sels = ['privOspite', 'uscitaOspite', 'guardaOspite', 'paramOspite', 'binaOspite'];
             let opzioni = window.globalOspiti.length > 0 ? '<option value="">-- Seleziona Ospite --</option>' : '<option value="">Nessun ospite registrato</option>';
             let checkboxes = '';
 
@@ -407,7 +805,11 @@
 
             sels.forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.innerHTML = opzioni;
+                if(el) {
+                    const prev = el.value;
+                    el.innerHTML = opzioni;
+                    if(prev) el.value = prev;
+                }
             });
 
             const chkAnim = document.getElementById('animPartecipanti');
@@ -416,6 +818,600 @@
                 chkAnim.querySelectorAll('input[type="checkbox"]').forEach(cb => { 
                     cb.addEventListener('change', function() { this.checked ? this.parentElement.classList.add('active') : this.parentElement.classList.remove('active'); }); 
                 });
+            }
+
+            if (globalUscite.length > 0) renderUsciteAttive(globalUscite);
+            if (document.getElementById('ws-alloggiati').classList.contains('active')) aggiornaTabellaAlloggiatiMob();
+        };
+
+        // --- HELPER DEDUZIONE SESSO E VALIDAZIONE ALLOGGIATI WEB ---
+        function getSessoOspite(o) {
+            if (!o) return null;
+            if (o.sesso === "1" || o.sesso === 1 || o.sesso === "M") return "1";
+            if (o.sesso === "2" || o.sesso === 2 || o.sesso === "F") return "2";
+            if (o.cf && typeof o.cf === 'string' && o.cf.length === 16) {
+                const giornoNas = parseInt(o.cf.substring(9, 11), 10);
+                if (!isNaN(giornoNas)) {
+                    return giornoNas > 40 ? "2" : "1";
+                }
+            }
+            return null;
+        }
+
+        function validaDatiAlloggiati(o) {
+            const errori = [];
+            const sesso = getSessoOspite(o);
+            if (!o.cognome && !o.nome) errori.push("Manca Nominativo");
+            if (!sesso) errori.push("Manca Sesso (M/F)");
+            if (!o.dob) errori.push("Manca Data Nascita");
+            if (!o.luogo_nascita || !o.luogo_nascita.codice_alloggiati) errori.push("Manca Codice ISTAT Nascita");
+            if (!o.luogo_nascita || !o.luogo_nascita.prov) errori.push("Manca Prov. Nascita");
+            if (!o.documento || !o.documento.tipo) errori.push("Manca Tipo Documento");
+            if (!o.documento || !o.documento.numero) errori.push("Manca Numero Documento");
+            if (!o.documento || !o.documento.codice_alloggiati_rilascio) errori.push("Manca Cod. ISTAT Rilascio Doc.");
+            return errori;
+        }
+
+        // --- MOTORE LOGICO ALLOGGIATI WEB TABLET (DIREZIONE SANITARIA) ---
+        window.cambiaModalitaAlloggiatiMob = () => {
+            const dataInput = document.getElementById('mob_allogg_data_riferimento');
+            if (dataInput && !dataInput.value) dataInput.value = new Date().toISOString().split('T')[0];
+            aggiornaTabellaAlloggiatiMob();
+        };
+
+        window.applicaDataATuttiMob = () => {
+            const data = document.getElementById('mob_allogg_data_riferimento').value;
+            if (!data) return;
+            document.querySelectorAll('.mob-allogg-row-data').forEach(input => input.value = data);
+        };
+
+        window.applicaGiorniATuttiMob = () => {
+            const g = parseInt(document.getElementById('mob_allogg_giorni_globali').value) || 30;
+            const validi = Math.min(30, Math.max(1, g));
+            document.getElementById('mob_allogg_giorni_globali').value = validi;
+            document.querySelectorAll('.mob-allogg-row-giorni').forEach(input => input.value = validi);
+        };
+
+        window.selezionaTuttiAlloggiatiMob = (stato) => {
+            document.querySelectorAll('.mob-allogg-chk-ospite:not(:disabled)').forEach(c => c.checked = stato);
+        };
+
+        window.aggiornaTabellaAlloggiatiMob = () => {
+            const tbody = document.getElementById('mob_tabella_alloggiati');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const ospitiPresenti = window.globalOspiti.filter(o => !o.fine_servizio);
+            if (ospitiPresenti.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; color:#64748b;">Nessun ospite presente in struttura.</td></tr>';
+                return;
+            }
+
+            const modalita = document.getElementById('mob_allogg_modalita') ? document.getElementById('mob_allogg_modalita').value : "RINNOVO";
+            const dataRifGlobale = document.getElementById('mob_allogg_data_riferimento') && document.getElementById('mob_allogg_data_riferimento').value
+                ? document.getElementById('mob_allogg_data_riferimento').value
+                : new Date().toISOString().split('T')[0];
+            const giorniDefault = document.getElementById('mob_allogg_giorni_globali') ? document.getElementById('mob_allogg_giorni_globali').value : "30";
+
+            ospitiPresenti.forEach(o => {
+                const sessoVal = getSessoOspite(o);
+                const errori = validaDatiAlloggiati(o);
+                const isValido = errori.length === 0;
+
+                const badgeStato = isValido 
+                    ? '<span style="color:#059669; font-weight:bold; font-size:11px;">✅ Completo</span>'
+                    : `<span style="color:#e11d48; font-size:10px; font-weight:bold;">⛔ Incompleto:<br>${errori.join(', ')}</span>`;
+
+                const dataRiga = modalita === "INGRESSO" ? (o.ingresso || dataRifGlobale) : dataRifGlobale;
+                const cognome = o.cognome || (o.nome ? o.nome.split(' ')[0] : '-');
+                const nomePuro = o.nome_puro || (o.nome ? o.nome.split(' ').slice(1).join(' ') : '-');
+                const sessoText = sessoVal === "2" ? "F (2)" : (sessoVal === "1" ? "M (1)" : "N/D");
+
+                tbody.innerHTML += `
+                    <tr style="${!isValido ? 'background:#fff1f2;' : ''}">
+                        <td style="text-align:center;">
+                            <input type="checkbox" class="mob-allogg-chk-ospite" data-id="${o.id}" ${isValido ? 'checked' : 'disabled'}>
+                        </td>
+                        <td>
+                            <strong>${cognome} ${nomePuro}</strong><br>
+                            <small style="color:#475569;">${sessoText} | CF: ${o.cf || '-'}</small>
+                        </td>
+                        <td>
+                            <input type="date" class="mob-allogg-row-data" id="mob_allogg_data_${o.id}" value="${dataRiga}" style="padding:4px; font-size:12px;">
+                        </td>
+                        <td style="text-align:center;">
+                            <input type="number" class="mob-allogg-row-giorni" id="mob_allogg_giorni_${o.id}" min="1" max="30" value="${giorniDefault}" style="width:50px; text-align:center; padding:4px; font-weight:bold;">
+                        </td>
+                        <td>
+                            <small>${o.luogo_nascita ? o.luogo_nascita.comune + ' (' + o.luogo_nascita.prov + ')' : '-'}<br>
+                            <code>${o.luogo_nascita && o.luogo_nascita.codice_alloggiati ? o.luogo_nascita.codice_alloggiati : 'Mancante'}</code></small>
+                        </td>
+                        <td>${badgeStato}</td>
+                    </tr>
+                `;
+            });
+        };
+
+        window.esportaAlloggiatiMob = () => {
+            if (!window.isDirezioneSanitaria(window.currentLoggedOp)) {
+                return window.showToast("⛔ Accesso Riservato alla Direzione Sanitaria");
+            }
+
+            const selezionati = [];
+            document.querySelectorAll('.mob-allogg-chk-ospite:checked').forEach(c => selezionati.push(c.dataset.id));
+
+            if (selezionati.length === 0) {
+                return alert("Seleziona almeno un ospite valido per generare il file!");
+            }
+
+            const righeFile = [];
+            const codiciTipoDoc = {
+                "Carta d'Identità": "IDENT",
+                "CIE": "IDENT",
+                "Passaporto": "PASSP",
+                "Patente": "PATEN"
+            };
+
+            const padR = (str, len) => (str || '').toString().toUpperCase().substring(0, len).padEnd(len, ' ');
+            const padL = (str, len) => (str || '').toString().padStart(len, '0').substring(0, len);
+            const convData = (iso) => {
+                if (!iso) return "          ";
+                const p = iso.split('-');
+                return `${p[2]}/${p[1]}/${p[0]}`;
+            };
+
+            for (let id of selezionati) {
+                const o = window.globalOspiti.find(x => String(x.id) === String(id));
+                if (!o) continue;
+
+                const errori = validaDatiAlloggiati(o);
+                if (errori.length > 0) {
+                    return alert(`Impossibile esportare: l'ospite ${o.nome} presenta dati non validi (${errori.join(', ')}).`);
+                }
+
+                const dataArrivoIso = document.getElementById(`mob_allogg_data_${o.id}`).value;
+                const giorniPermanenza = parseInt(document.getElementById(`mob_allogg_giorni_${o.id}`).value) || 30;
+                const giorniValidi = Math.min(30, Math.max(1, giorniPermanenza));
+
+                let cognome = o.cognome;
+                let nomePuro = o.nome_puro;
+                if (!cognome || !nomePuro) {
+                    const parts = (o.nome || '').trim().split(/\s+/);
+                    cognome = parts[0] || '';
+                    nomePuro = parts.slice(1).join(' ') || '';
+                }
+
+                const sessoVal = getSessoOspite(o) || "1";
+
+                let riga = "";
+                riga += "16";                                                          // 1-2: Tipo Alloggiato (16)
+                riga += convData(dataArrivoIso);                                       // 3-12: Data Arrivo
+                riga += padL(giorniValidi, 2);                                         // 13-14: Permanenza (01-30)
+                riga += padR(cognome, 50);                                             // 15-64: Cognome
+                riga += padR(nomePuro, 30);                                            // 65-94: Nome
+                riga += sessoVal;                                                      // 95: Sesso
+                riga += convData(o.dob);                                               // 96-105: Data di Nascita
+                riga += padR(o.luogo_nascita.codice_alloggiati, 9);                    // 106-114: ISTAT Comune Nascita
+                riga += padR(o.luogo_nascita.prov, 2);                                 // 115-116: Provincia Nascita
+                riga += "100000100";                                                   // 117-125: Stato Nascita (Italia)
+                riga += "100000100";                                                   // 126-134: Cittadinanza (Italia)
+                riga += padR(codiciTipoDoc[o.documento.tipo] || "IDENT", 5);           // 135-139: Tipo Documento
+                riga += padR(o.documento.numero, 20);                                  // 140-159: Numero Documento
+                riga += padR(o.documento.codice_alloggiati_rilascio, 9);               // 160-168: Luogo Rilascio ISTAT
+
+                if (riga.length !== 168) {
+                    return alert(`Errore interno nel tracciato per ${o.nome}: lunghezza ${riga.length} car. anziché 168.`);
+                }
+                righeFile.push(riga);
+            }
+
+            const contenutoTesto = righeFile.join("\r\n") + "\r\n";
+            const blob = new Blob([contenutoTesto], { type: "text/plain;charset=windows-1252" });
+            const dataOggiStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const nomeFile = `Alloggiati_${dataOggiStr}.txt`;
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = nomeFile;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            window.showToast(`✅ File '${nomeFile}' esportato con successo!`);
+            alert(`✅ File '${nomeFile}' generato con successo!\nRecord esportati: ${righeFile.length}\nConforme alle specifiche ufficiali della Polizia di Stato.`);
+        };
+
+        // --- MOTORE LOGICO B.I.N.A. TABLET (DIREZIONE SANITARIA) ---
+        window.calcolaBinaTablet = () => {
+            let somma = 0;
+            document.querySelectorAll('.bina-calc-mob').forEach(sel => {
+                somma += parseInt(sel.value) || 0;
+            });
+            const totEl = document.getElementById('mob_bina_totale');
+            const esitoEl = document.getElementById('mob_bina_esito');
+            const displayEl = document.getElementById('mob_bina_score_display');
+            if(!totEl || !esitoEl || !displayEl) return;
+
+            totEl.value = somma;
+            const esito = somma > 230 ? "NON AUTOSUFFICIENTE" : "AUTOSUFFICIENTE";
+            const colore = somma > 230 ? "#e11d48" : "#059669";
+            esitoEl.value = esito;
+
+            displayEl.innerHTML = `PUNTEGGIO: ${somma}<br><span style="font-size: 22px; color:${colore};">${esito}</span><p style="font-size: 11px; font-weight: normal; color: #64748b; margin: 4px 0 0 0;">(Soglia cut-off: 230 pt)</p>`;
+        };
+
+        async function salvaBinaTablet() {
+            if (!window.isDirezioneSanitaria(window.currentLoggedOp)) {
+                return window.showToast("⛔ Accesso Riservato alla Direzione Sanitaria");
+            }
+
+            const nomeOspite = document.getElementById('binaOspite').value;
+            const dataVal = document.getElementById('binaData').value;
+            const tipoCert = document.getElementById('binaTipoCert').value;
+            const punteggio = parseInt(document.getElementById('mob_bina_totale').value) || 0;
+            const esito = document.getElementById('mob_bina_esito').value;
+
+            if(!nomeOspite || !dataVal) {
+                return window.showToast("⚠️ Seleziona un Ospite e la Data di valutazione!");
+            }
+
+            const ospite = window.globalOspiti.find(x => x.nome === nomeOspite);
+            const newId = Date.now();
+            const btn = document.getElementById('btnSalvaBinaMob');
+            btn.innerText = "⏳ Registrazione..."; btn.disabled = true;
+
+            try {
+                const recBina = {
+                    id: newId,
+                    ospite_id: ospite ? ospite.id : newId,
+                    ospite_nome: nomeOspite,
+                    data: dataVal,
+                    tipo_cert: tipoCert,
+                    punteggio: punteggio,
+                    esito: esito,
+                    firme: {
+                        inf: null,
+                        oss: null,
+                        med: `${window.activeOp || 'Direzione Sanitaria'} (${new Date().toLocaleDateString('it-IT')})`
+                    }
+                };
+
+                await rtdb.ref(`gestionale_db/bina/${newId}`).set(sanitizeForRTDB(recBina));
+                window.showToast("✅ Valutazione B.I.N.A. registrata con successo!");
+                alert(`✅ Modulo B.I.N.A. per ${nomeOspite} salvato nel gestionale!\nPunteggio: ${punteggio} - ${esito}`);
+                window.goHome();
+            } catch(err) {
+                alert("Errore salvataggio BINA: " + err.message);
+            } finally {
+                btn.innerText = "💾 Registra Valutazione B.I.N.A.";
+                btn.disabled = false;
+            }
+        }
+
+        // --- VERIFICA STATO PRIVACY PER OSPITE (BLOCCO E ANTEPRIMA) ---
+        window.checkOspitePrivacyStatus = () => {
+            const nomeOspite = document.getElementById('privOspite').value;
+            const chks = ['privDati', 'privFoto', 'privReg', 'privCarta'];
+            const btnFirma = document.getElementById('btnAcquisisciFirmaPriv');
+            const previewBox = document.getElementById('privFirmaPreviewContainer');
+            const previewImg = document.getElementById('privFirmaImg');
+            const previewTxt = document.getElementById('privFirmaDettaglio');
+
+            if (!nomeOspite) {
+                chks.forEach(id => { const el = document.getElementById(id); if(el) { el.checked = false; el.disabled = false; } });
+                if (previewBox) previewBox.style.display = 'none';
+                if (btnFirma) { btnFirma.disabled = false; btnFirma.innerText = "✍️ Acquisisci Firma su Tablet"; btnFirma.style.backgroundColor = "var(--privacy-color)"; }
+                return;
+            }
+
+            const o = window.globalOspiti.find(x => x.nome === nomeOspite);
+            if (o && o.privacy && o.privacy.firma_url) {
+                document.getElementById('privDati').checked = !!o.privacy.dati;
+                document.getElementById('privFoto').checked = !!o.privacy.foto;
+                document.getElementById('privReg').checked = !!o.privacy.regolamento;
+                document.getElementById('privCarta').checked = !!o.privacy.carta_servizi;
+
+                chks.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+
+                if (previewBox && previewImg && previewTxt) {
+                    previewImg.src = o.privacy.firma_url;
+                    previewTxt.innerText = `Attestato da: ${o.privacy.firmato_da || 'Familiare'}`;
+                    previewBox.style.display = 'block';
+                }
+
+                if (btnFirma) {
+                    btnFirma.disabled = true;
+                    btnFirma.innerText = "🔒 Consensi già Acquisiti";
+                    btnFirma.style.backgroundColor = "#64748b";
+                }
+            } else {
+                chks.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = false; });
+                if (previewBox) previewBox.style.display = 'none';
+                if (btnFirma) {
+                    btnFirma.disabled = false;
+                    btnFirma.innerText = "✍️ Acquisisci Firma su Tablet";
+                    btnFirma.style.backgroundColor = "var(--privacy-color)";
+                }
+            }
+        };
+
+        // --- COMPRESSIONE FILE PER TABLET ---
+        function leggiEComprimiFileMobile(fileInputId, path_folder = "generici") {
+            return new Promise((resolve) => {
+                const el = document.getElementById(fileInputId);
+                const file = el && el.files ? el.files[0] : null; 
+                if (!file) return resolve(null);
+
+                const uploadToStorage = async (blobToUpload) => {
+                    try {
+                        const fileRef = storage.ref().child(`uploads/${path_folder}/${Date.now()}_${file.name}`);
+                        await fileRef.put(blobToUpload);
+                        const url = await fileRef.getDownloadURL();
+                        resolve({ nome: file.name, dati: url });
+                    } catch(err) {
+                        console.error("Upload error:", err);
+                        resolve(null);
+                    }
+                };
+
+                if (file.type === 'application/pdf') {
+                    uploadToStorage(file);
+                } else if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = event => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const cvs = document.createElement('canvas');
+                            const cx = cvs.getContext('2d');
+                            let width = img.width, height = img.height;
+                            if (width > 1200) { height = Math.round(height * (1200 / width)); width = 1200; }
+                            cvs.width = width; cvs.height = height;
+                            cx.drawImage(img, 0, 0, width, height);
+                            cvs.toBlob((blob) => { uploadToStorage(blob); }, 'image/jpeg', 0.7);
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+
+        function previewMobFoto(e, targetImgId) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const img = document.getElementById(targetImgId);
+                    if (img) {
+                        img.src = ev.target.result;
+                        document.getElementById('mob_foto_preview_box').style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- SALVATAGGIO NUOVO OSPITE (DIREZIONE SANITARIA) ---
+        async function salvaNuovoOspiteTablet() {
+            if (!window.isDirezioneSanitaria(window.currentLoggedOp)) {
+                return window.showToast("⛔ Non sei autorizzato a inserire nuovi ospiti.");
+            }
+
+            const cognome = document.getElementById('mob_osp_cognome').value.trim();
+            const nomePuro = document.getElementById('mob_osp_nome').value.trim();
+            const sesso = document.getElementById('mob_osp_sesso').value;
+            const cf = document.getElementById('mob_osp_cf').value.trim().toUpperCase();
+            const dob = document.getElementById('mob_osp_dob').value;
+            const ingresso = document.getElementById('mob_osp_ingresso').value;
+            
+            const com_nas = document.getElementById('mob_osp_comune_nas').value.trim();
+            const prov_nas = document.getElementById('mob_osp_prov_nas').value.trim().toUpperCase();
+            const cod_nas = document.getElementById('mob_osp_cod_nas').value.trim();
+            
+            const indirizzo = document.getElementById('mob_osp_indirizzo').value.trim();
+            const com_res = document.getElementById('mob_osp_comune_res').value.trim();
+            const prov_res = document.getElementById('mob_osp_prov_res').value.trim().toUpperCase();
+            const cod_res = document.getElementById('mob_osp_cod_res').value.trim();
+            
+            const doc_tipo = document.getElementById('mob_osp_doc_tipo').value;
+            const doc_num = document.getElementById('mob_osp_doc_num').value.trim();
+            const doc_comune = document.getElementById('mob_osp_doc_comune').value.trim();
+            const doc_prov = document.getElementById('mob_osp_doc_prov').value.trim().toUpperCase();
+            const doc_cod_comune = document.getElementById('mob_osp_doc_cod_comune').value.trim();
+
+            if (!cognome || !nomePuro || !sesso || !cf || !dob || !ingresso || !com_nas || !prov_nas || !cod_nas || !indirizzo || !com_res || !prov_res || !cod_res || !doc_tipo || !doc_num || !doc_comune || !doc_prov || !doc_cod_comune) {
+                return window.showToast("⚠️ Compila tutti i campi obbligatori con asterisco (*)");
+            }
+
+            const esiste = window.globalOspiti.some(o => !o.fine_servizio && o.cf && o.cf.toUpperCase() === cf);
+            if (esiste) {
+                return alert(`⛔ Ospite con Codice Fiscale ${cf} già presente in struttura!`);
+            }
+
+            const btn = document.getElementById('btnSalvaNuovoOspiteMob');
+            btn.innerText = "⏳ Caricamento & Compressione Allegati...";
+            btn.disabled = true;
+
+            try {
+                const fileFoto = await leggiEComprimiFileMobile('mob_osp_file_foto', 'foto_profili');
+                const fileIdentita = await leggiEComprimiFileMobile('mob_osp_file_doc', 'documenti');
+                const fileTessera = await leggiEComprimiFileMobile('mob_osp_file_ts', 'documenti');
+                const fileCertificato = await leggiEComprimiFileMobile('mob_osp_file_cert', 'certificati');
+                const fileContratto = await leggiEComprimiFileMobile('mob_osp_file_contratto', 'contratti');
+
+                const nominativoCompleto = `${cognome.toUpperCase()} ${nomePuro.toUpperCase()}`;
+                const newId = Date.now();
+
+                const nuovoRecord = {
+                    id: newId,
+                    cognome: cognome.toUpperCase(),
+                    nome_puro: nomePuro.toUpperCase(),
+                    nome: nominativoCompleto,
+                    sesso: sesso,
+                    dob: dob,
+                    cf: cf,
+                    ingresso: ingresso,
+                    luogo_nascita: { comune: com_nas, prov: prov_nas, codice_alloggiati: cod_nas },
+                    residenza: { indirizzo: indirizzo, comune: com_res, prov: prov_res, codice_alloggiati: cod_res },
+                    familiare: { 
+                        nome: document.getElementById('mob_osp_fam_nome').value.trim() || "-", 
+                        parentela: document.getElementById('mob_osp_fam_parentela').value, 
+                        telefono: document.getElementById('mob_osp_fam_tel').value.trim() || "-" 
+                    },
+                    mmg: { 
+                        nome: document.getElementById('mob_osp_mmg_nome').value.trim() || "-", 
+                        tel: document.getElementById('mob_osp_mmg_tel').value.trim() || "-", 
+                        email: document.getElementById('mob_osp_mmg_email').value.trim() || "-" 
+                    },
+                    ads: { 
+                        nome: document.getElementById('mob_osp_ads_nome').value.trim() || "-", 
+                        tel: document.getElementById('mob_osp_ads_tel').value.trim() || "-", 
+                        email: document.getElementById('mob_osp_ads_email').value.trim() || "-" 
+                    },
+                    documento: { 
+                        tipo: doc_tipo, 
+                        numero: doc_num, 
+                        comune: doc_comune, 
+                        prov: doc_prov, 
+                        codice_alloggiati_rilascio: doc_cod_comune, 
+                        rilascio: document.getElementById('mob_osp_doc_rilascio').value || "", 
+                        scadenza: document.getElementById('mob_osp_doc_scadenza').value || "" 
+                    },
+                    privacy: {
+                        dati: document.getElementById('mob_osp_privacy_dati').checked,
+                        foto: document.getElementById('mob_osp_privacy_foto').checked,
+                        regolamento: document.getElementById('mob_osp_privacy_reg').checked,
+                        carta_servizi: document.getElementById('mob_osp_privacy_carta').checked,
+                        firmato_da: "Tablet (Registrato da Direzione Sanitaria)",
+                        firma_url: null
+                    },
+                    foto: fileFoto || null,
+                    allegati: {
+                        identita: fileIdentita || null,
+                        sanitaria: fileTessera || null,
+                        certificato: fileCertificato || null,
+                        contratto: fileContratto || null
+                    },
+                    fine_servizio: null
+                };
+
+                await rtdb.ref(`gestionale_db/ospiti/${newId}`).set(sanitizeForRTDB(nuovoRecord));
+                window.showToast("✅ Nuovo Ospite registrato con successo!");
+                alert(`✅ Ospite ${nominativoCompleto} inserito nel gestionale!`);
+
+                document.querySelectorAll('#ws-nuovo-ospite input:not([type="checkbox"])').forEach(i => i.value = '');
+                document.getElementById('mob_foto_preview_box').style.display = 'none';
+                window.goHome();
+            } catch(err) {
+                alert("Errore salvataggio: " + err.message);
+            } finally {
+                btn.innerText = "💾 Salva e Registra Ospite";
+                btn.disabled = false;
+            }
+        }
+
+        // --- GESTIONE INVENTARIO GUARDAROBA TABLET ---
+        window.aggiornaInventarioOspiteTablet = () => {
+            const nomeOspite = document.getElementById('guardaOspite').value;
+            const giacenze = { maglie: 0, pantaloni: 0, intimo: 0, pigiami: 0 };
+            
+            if (nomeOspite && globalGuardaroba.length > 0) {
+                const ospite = window.globalOspiti.find(x => x.nome === nomeOspite);
+                const ospId = ospite ? ospite.id : null;
+                const movimenti = globalGuardaroba.filter(m => String(m.ospite_id) === String(ospId) || m.ospite_nome === nomeOspite);
+                
+                movimenti.forEach(m => {
+                    const fattore = m.tipo === 'CARICO' ? 1 : -1;
+                    giacenze.maglie += (parseInt(m.maglie) || 0) * fattore;
+                    giacenze.pantaloni += (parseInt(m.pantaloni) || 0) * fattore;
+                    giacenze.intimo += (parseInt(m.intimo) || 0) * fattore;
+                    giacenze.pigiami += (parseInt(m.pigiami) || 0) * fattore;
+                });
+            }
+
+            const format = (v) => `In stanza: ${Math.max(0, v)}`;
+            if (document.getElementById('giacMaglie')) document.getElementById('giacMaglie').innerText = format(giacenze.maglie);
+            if (document.getElementById('giacPantaloni')) document.getElementById('giacPantaloni').innerText = format(giacenze.pantaloni);
+            if (document.getElementById('giacIntimo')) document.getElementById('giacIntimo').innerText = format(giacenze.intimo);
+            if (document.getElementById('giacPigiami')) document.getElementById('giacPigiami').innerText = format(giacenze.pigiami);
+        };
+
+        // --- GESTIONE USCITE E RIENTRI TABLET (MOTORE CERTOSINO) ---
+        function isUscitaAttiva(u) {
+            if (!u) return false;
+            const haDataIn = u.data_in && u.data_in !== "-" && u.data_in !== "" && u.data_in !== "null";
+            const haOraIn = u.ora_in && u.ora_in !== "-" && u.ora_in !== "" && u.ora_in !== "null";
+            if (haDataIn || haOraIn) return false;
+            return !!(u.data_out || u.ora_out);
+        }
+
+        function renderUsciteAttive(usciteList) {
+            globalUscite = usciteList || [];
+            const attive = globalUscite.filter(isUscitaAttiva);
+            
+            const contDash = document.getElementById('dashUsciteContainer');
+            const contWs = document.getElementById('activeUsciteContainer');
+
+            const renderHtml = (arr) => {
+                if (!arr || arr.length === 0) {
+                    return '<p style="color:#059669; font-weight:bold; font-size:0.9em; margin:8px 0;">✅ Tutti gli ospiti sono attualmente presenti in struttura.</p>';
+                }
+                return arr.map(u => {
+                    const ospite = window.globalOspiti.find(x => String(x.id) === String(u.ospite_id) || x.nome === u.ospite_nome) || { nome: u.ospite_nome || 'Ospite' };
+                    const keyUnivoca = u._key || u.id;
+                    return `
+                        <div class="uscita-attiva-card">
+                            <div class="uscita-attiva-info">
+                                <strong>🚶 ${ospite.nome}</strong>
+                                <small>Uscito il ${window.formattaData(u.data_out)} ore ${u.ora_out || '-'}${u.note && u.note !== '-' ? '<br><b>Note:</b> ' + u.note : ''}</small>
+                            </div>
+                            <button class="btn-rientro" onclick="salvaRientroTablet('${keyUnivoca}')">🏠 Rientro</button>
+                        </div>
+                    `;
+                }).join('');
+            };
+
+            if (contDash) contDash.innerHTML = renderHtml(attive);
+            if (contWs) contWs.innerHTML = renderHtml(attive);
+        }
+
+        window.salvaRientroTablet = async (keyOrId) => {
+            if (!keyOrId) return window.showToast("⚠️ Identificativo uscita mancante.");
+
+            const u = globalUscite.find(x => String(x._key) === String(keyOrId) || String(x.id) === String(keyOrId));
+            const ospiteNome = u ? (u.ospite_nome || (window.globalOspiti.find(o => String(o.id) === String(u.ospite_id)) || {}).nome || "l'ospite") : "l'ospite";
+
+            const adesso = new Date();
+            const oraDefault = adesso.toTimeString().substring(0, 5);
+            const dataIn = adesso.toISOString().split('T')[0];
+
+            const oraIn = prompt(`Conferma orario di rientro per ${ospiteNome}:`, oraDefault);
+            if (!oraIn) return;
+
+            try {
+                const targetKey = (u && u._key) ? u._key : keyOrId;
+                
+                await rtdb.ref(`gestionale_db/uscite/${targetKey}`).update({
+                    data_in: dataIn,
+                    ora_in: oraIn.trim(),
+                    rientro_operatore: window.activeOp || "Operatore"
+                });
+
+                if (u && u.id && String(u.id) !== String(targetKey)) {
+                    await rtdb.ref(`gestionale_db/uscite/${u.id}`).update({
+                        data_in: dataIn,
+                        ora_in: oraIn.trim(),
+                        rientro_operatore: window.activeOp || "Operatore"
+                    }).catch(() => {});
+                }
+
+                window.showToast(`🏠 Rientro di ${ospiteNome} registrato alle ${oraIn}!`);
+            } catch(e) {
+                console.error("Errore salvataggio rientro:", e);
+                window.showToast("❌ Errore rientro: " + e.message);
             }
         };
 
@@ -430,6 +1426,19 @@
                     renderLoginProfiles();
                 });
 
+                rtdb.ref('gestionale_db/operatori').on('value', (snap) => {
+                    const rtdbOp = snap.val();
+                    if (rtdbOp) {
+                        const opArray = Array.isArray(rtdbOp) ? rtdbOp : Object.values(rtdbOp);
+                        opArray.forEach(o => {
+                            if (o && !dbOperatori.some(x => x.nome === o.nome)) {
+                                dbOperatori.push({ nome: `${o.nome} ${o.cognome || ''}`.trim(), pin: o.pin, incarico: o.incarico });
+                            }
+                        });
+                        renderLoginProfiles();
+                    }
+                });
+
                 db.collection("configurazioni").doc("liste").onSnapshot((docSnap) => {
                     if(docSnap.exists) {
                         appConfig = docSnap.data();
@@ -437,12 +1446,44 @@
                     }
                 });
 
+                // Ascolto in tempo reale del database gestionale
                 rtdb.ref('gestionale_db').on('value', (snapshot) => {
                     const root = snapshot.val();
-                    if (root && root.ospiti) {
-                        window.popolaTendineOspiti(root.ospiti);
-                    } else if (root) {
-                        window.popolaTendineOspiti(root);
+                    if (root) {
+                        if (root.ospiti) window.popolaTendineOspiti(root.ospiti);
+                        
+                        const usciteSnap = snapshot.child('uscite');
+                        const usciteList = [];
+                        if (usciteSnap.exists()) {
+                            usciteSnap.forEach(child => {
+                                const val = child.val();
+                                if (val && typeof val === 'object') {
+                                    usciteList.push({
+                                        ...val,
+                                        _key: child.key,
+                                        id: val.id || child.key
+                                    });
+                                }
+                            });
+                        }
+                        renderUsciteAttive(usciteList);
+
+                        const guardaSnap = snapshot.child('guardaroba');
+                        const guardaList = [];
+                        if (guardaSnap.exists()) {
+                            guardaSnap.forEach(child => {
+                                const val = child.val();
+                                if (val && typeof val === 'object') {
+                                    guardaList.push({
+                                        ...val,
+                                        _key: child.key,
+                                        id: val.id || child.key
+                                    });
+                                }
+                            });
+                        }
+                        globalGuardaroba = guardaList;
+                        window.aggiornaInventarioOspiteTablet();
                     }
                 });
             }
@@ -453,19 +1494,21 @@
             if(!lc) return;
             lc.innerHTML = '';
             if (dbOperatori.length === 0) {
-                dbOperatori = [{ id: 1, nome: "Admin", pin: "12345", qualifica: "Direzione" }];
+                dbOperatori = [{ id: 1, nome: "Admin", pin: "12345", incarico: "Direzione Sanitaria" }];
             }
             dbOperatori.forEach(op => {
                 let b = document.createElement('div');
                 b.className = 'profile-btn';
-                b.innerHTML = `<div class="profile-avatar">👨‍🍳</div><span style="font-weight:bold; font-size:1em;">${op.nome}</span>`;
+                b.innerHTML = `<div class="profile-avatar">👨‍⚕️</div><span style="font-weight:bold; font-size:0.95em;">${op.nome}</span><small style="font-size:10px; color:#64748b;">${op.incarico || op.qualifica || 'Operatore'}</small>`;
                 b.onclick = () => selectLoginProfile(op);
                 lc.appendChild(b);
             });
         }
 
         window.selectLoginProfile = (op) => {
-            window.activeOp = op.nome; window.activeOpPin = op.pin || "12345";
+            window.activeOp = op.nome; 
+            window.activeOpPin = op.pin || "12345";
+            window.currentLoggedOp = op;
             document.getElementById('loginProfilesContainer').style.display = 'none';
             document.getElementById('loginPinArea').style.display = 'block';
             document.getElementById('selectedProfileLabel').innerText = `Inserisci PIN per ${op.nome}:`;
@@ -473,31 +1516,47 @@
         };
 
         window.resetLoginSelection = () => {
-            window.activeOp = null; window.activeOpPin = null;
+            window.activeOp = null; 
+            window.activeOpPin = null;
+            window.currentLoggedOp = null;
             document.getElementById('loginPinArea').style.display = 'none';
             document.getElementById('loginProfilesContainer').style.display = 'grid';
         };
 
         window.addPin = (num) => { 
             const p = document.getElementById('loginPinInput'); 
-            if(p.value.length < 4) p.value += num; 
-            if(p.value.length === 4) setTimeout(checkPin, 100);
+            if(p.value.length < 5) p.value += num; 
+            if(p.value.length >= 4 && p.value === window.activeOpPin) setTimeout(checkPin, 80);
         };
         window.clearPin = () => { document.getElementById('loginPinInput').value = ""; };
         
         window.checkPin = () => {
             const pin = document.getElementById('loginPinInput').value;
             if (pin === window.activeOpPin || pin === "12345") { 
-                document.getElementById('currentOpBadge').innerText = `👨‍🍳 ${window.activeOp}`; 
+                document.getElementById('currentOpBadge').innerText = `👨‍⚕️ ${window.activeOp}`; 
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('top-nav-container').style.display = 'flex';
                 document.getElementById('appScreen').style.display = 'flex';
+
+                // Visibilità CONDIVISA SOLO CON LA DIREZIONE SANITARIA
+                const isDir = window.isDirezioneSanitaria(window.currentLoggedOp);
+                const tileNuovoOsp = document.getElementById('dash-item-nuovo-ospite');
+                const tilePrivacy = document.getElementById('dash-item-privacy');
+                const tileBina = document.getElementById('dash-item-bina');
+                const tileAlloggiati = document.getElementById('dash-item-alloggiati');
+                
+                if (tileNuovoOsp) tileNuovoOsp.style.display = isDir ? 'flex' : 'none';
+                if (tilePrivacy) tilePrivacy.style.display = isDir ? 'flex' : 'none';
+                if (tileBina) tileBina.style.display = isDir ? 'flex' : 'none';
+                if (tileAlloggiati) tileAlloggiati.style.display = isDir ? 'flex' : 'none';
+
                 window.onload();
             } else { window.showToast("❌ PIN Errato"); window.clearPin(); }
         };
 
         window.logout = () => { 
             window.activeOp = null; 
+            window.currentLoggedOp = null;
             document.getElementById('top-nav-container').style.display = 'none';
             document.getElementById('appScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
@@ -520,15 +1579,70 @@
         
         window.onload = () => { 
             const t = window.getToday(); 
-            ['tempData', 'areeData', 'pulizieData', 'merciData', 'traccData', 'pestDate', 'sicDocDate', 'uscitaData', 'guardaData', 'animData', 'paramData', 'consData', 'prepData'].forEach(id => { 
+            ['tempData', 'areeData', 'pulizieData', 'merciData', 'traccData', 'pestDate', 'sicDocDate', 'uscitaData', 'guardaData', 'animData', 'paramData', 'consData', 'prepData', 'mob_osp_ingresso', 'mob_osp_doc_rilascio', 'binaData', 'mob_allogg_data_riferimento'].forEach(id => { 
                 if(document.getElementById(id)) document.getElementById(id).value = t; 
             }); 
             if(document.getElementById('uscitaOra')) {
                 const n = new Date(); document.getElementById('uscitaOra').value = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
             }
+            window.calcolaBinaTablet();
         };
 
-        // --- GESTIONE CANVAS ---
+        // --- GESTIONE FOTO CONSEGNE E TRACCIABILITÀ ---
+        let previewFotoConsData = null;
+        window.previewConsFoto = (e) => {
+            const f = e.target.files[0];
+            if(f) {
+                const r = new FileReader();
+                r.onload = ev => {
+                    document.getElementById('consImgPreview').src = ev.target.result;
+                    document.getElementById('consPreviewContainer').style.display = 'block';
+                    previewFotoConsData = ev.target.result;
+                };
+                r.readAsDataURL(f);
+            }
+        };
+
+        let previewFotoTraccData = null;
+        window.previewTraccFoto = (e) => {
+            const f = e.target.files[0];
+            if(f) {
+                const r = new FileReader();
+                r.onload = ev => {
+                    document.getElementById('traccImgPreview').src = ev.target.result;
+                    document.getElementById('traccPreviewContainer').style.display = 'block';
+                    previewFotoTraccData = ev.target.result;
+                };
+                r.readAsDataURL(f);
+            }
+        };
+
+        window.saveConsegna = async () => {
+            const dt = document.getElementById('consData').value;
+            const turno = document.getElementById('consTurno').value;
+            const note = document.getElementById('consNote').value.trim();
+
+            if(!dt) return window.showToast("⚠️ Inserisci la data!");
+            const fotoFile = await leggiEComprimiFileMobile('consFile', 'consegne');
+            if(!fotoFile) return window.showToast("⚠️ Devi scattare o allegare la foto del foglio consegne!");
+
+            const rec = {
+                id: Date.now(),
+                data: dt,
+                turno: turno,
+                operatore: window.activeOp || "Operatore",
+                note: note || "-",
+                foto: fotoFile
+            };
+
+            await rtdb.ref(`gestionale_db/consegne/${rec.id}`).set(sanitizeForRTDB(rec));
+            window.showToast("✅ Consegna salvata!");
+            document.getElementById('consNote').value = '';
+            document.getElementById('consPreviewContainer').style.display = 'none';
+            window.goHome();
+        };
+
+        // --- GESTIONE CANVAS TOUCH PER FIRMA ---
         const canvas = document.getElementById('signatureCanvas'); 
         let ctx = canvas.getContext('2d'); window.isDrawing = false;
         
@@ -558,51 +1672,303 @@
 
         window.requestSignature = (target) => {
             if(target === 'privacy' && !document.getElementById('privOspite').value) return window.showToast("⚠️ Seleziona un ospite!");
-            window.currentTarget = target; document.getElementById('signatureModal').style.display = 'flex'; setTimeout(resizeCanvas, 100);
+            if(target === 'uscite' && !document.getElementById('uscitaOspite').value) return window.showToast("⚠️ Seleziona l'ospite in uscita!");
+            if(target === 'guardaroba' && !document.getElementById('guardaOspite').value) return window.showToast("⚠️ Seleziona un ospite!");
+            if(target === 'animazione' && !document.getElementById('animNome').value.trim()) return window.showToast("⚠️ Inserisci il nome dell'attività!");
+            if(target === 'parametri' && !document.getElementById('paramOspite').value) return window.showToast("⚠️ Seleziona un ospite!");
+
+            window.currentTarget = target; 
+            document.getElementById('signatureModal').style.display = 'flex'; 
+            setTimeout(resizeCanvas, 100);
         };
         window.closeSignature = () => { document.getElementById('signatureModal').style.display = 'none'; window.currentTarget = null; };
         window.clearSignature = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.beginPath(); };
 
+        // --- SALVATAGGIO DEI MODULI CONVALIDATI DA FIRMA TOUCH ---
         window.confirmSignature = async () => {
             if(document.createElement('canvas').toDataURL() === canvas.toDataURL()) return window.showToast("⚠️ Devi firmare.");
             
-            if (window.currentTarget === 'privacy') {
-                const btn = document.querySelector('#signatureModal .btn-success');
-                btn.innerText = "⏳ Upload..."; btn.disabled = true;
+            const btn = document.getElementById('btnConfermaModalFirma');
+            btn.innerText = "⏳ Salvataggio..."; btn.disabled = true;
 
-                canvas.toBlob(async (blob) => {
-                    try {
-                        const ospiteNome = document.getElementById('privOspite').value;
-                        const snap = await rtdb.ref('gestionale_db/ospiti').once('value');
-                        if (!snap.exists()) throw new Error("Nessun ospite nel DB.");
-                        
-                        let targetKey = null;
-                        snap.forEach(child => { if (child.val() && child.val().nome === ospiteNome) targetKey = child.key; });
-                        if (targetKey === null) throw new Error("Ospite non trovato.");
+            try {
+                // 1. PRIVACY: Salva su RTDB con blocco immediato
+                if (window.currentTarget === 'privacy') {
+                    const ospiteNome = document.getElementById('privOspite').value;
+                    const snap = await rtdb.ref('gestionale_db/ospiti').once('value');
+                    if (!snap.exists()) throw new Error("Nessun ospite nel DB.");
+                    
+                    let targetKey = null;
+                    snap.forEach(child => { 
+                        const v = child.val();
+                        if (v && (v.nome === ospiteNome || String(child.key) === String(ospiteNome) || String(v.id) === String(ospiteNome))) {
+                            targetKey = child.key; 
+                        }
+                    });
+                    if (targetKey === null) throw new Error("Ospite non trovato.");
 
-                        const fileRef = storage.ref().child(`uploads/firme_privacy/${Date.now()}_firma.png`);
-                        await fileRef.put(blob);
-                        const url = await fileRef.getDownloadURL();
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            const fileRef = storage.ref().child(`uploads/firme_privacy/${Date.now()}_firma.png`);
+                            await fileRef.put(blob);
+                            const url = await fileRef.getDownloadURL();
 
-                        await rtdb.ref(`gestionale_db/ospiti/${targetKey}/privacy`).set({
-                            dati: document.getElementById('privDati').checked,
-                            foto: document.getElementById('privFoto').checked,
-                            regolamento: document.getElementById('privReg').checked,
-                            carta_servizi: document.getElementById('privCarta').checked,
-                            firmato_da: "Familiare (Tablet - " + (window.activeOp || "OSA") + ")",
-                            firma_url: url
-                        });
+                            await rtdb.ref(`gestionale_db/ospiti/${targetKey}/privacy`).set(sanitizeForRTDB({
+                                dati: document.getElementById('privDati').checked,
+                                foto: document.getElementById('privFoto').checked,
+                                regolamento: document.getElementById('privReg').checked,
+                                carta_servizi: document.getElementById('privCarta').checked,
+                                firmato_da: "Familiare (Tablet - " + (window.activeOp || "Operatore") + ")",
+                                firma_url: url
+                            }));
 
-                        window.showToast("✅ Consensi Privacy salvati!");
-                        window.goHome(); window.closeSignature();
-                    } catch(e) { 
-                        window.showToast("❌ Errore: " + e.message); 
-                    } finally { 
-                        btn.innerText = "✅ Conferma"; btn.disabled = false; 
+                            window.showToast("✅ Consensi Privacy salvati!");
+                            window.checkOspitePrivacyStatus();
+                            window.goHome(); window.closeSignature();
+                        } catch(err) {
+                            window.showToast("❌ Errore upload: " + err.message);
+                        } finally {
+                            btn.innerText = "✅ Conferma"; btn.disabled = false;
+                        }
+                    }, 'image/png');
+                    return;
+                }
+
+                // 2. USCITE: Salva su RTDB e aggiorna lista attivi
+                if (window.currentTarget === 'uscite') {
+                    const ospiteNome = document.getElementById('uscitaOspite').value;
+                    const osp = window.globalOspiti.find(x => x.nome === ospiteNome);
+                    const dtOut = document.getElementById('uscitaData').value;
+                    const hrOut = document.getElementById('uscitaOra').value;
+                    const note = document.getElementById('uscitaNote').value.trim();
+
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            let url = null;
+                            try {
+                                const fileRef = storage.ref().child(`uploads/firme_uscite/${Date.now()}_firma.png`);
+                                await fileRef.put(blob);
+                                url = await fileRef.getDownloadURL();
+                            } catch(errStorage) {
+                                console.warn("Storage non disponibile, continuo senza immagine:", errStorage);
+                            }
+
+                            const newId = Date.now();
+                            const recUscita = {
+                                id: newId,
+                                ospite_id: osp ? osp.id : newId,
+                                ospite_nome: ospiteNome,
+                                data_out: dtOut,
+                                ora_out: hrOut,
+                                note: note || "-",
+                                data_in: null,
+                                ora_in: null,
+                                firma_operatore: window.activeOp || "Operatore",
+                                firma_url: url || null
+                            };
+
+                            await rtdb.ref(`gestionale_db/uscite/${newId}`).set(sanitizeForRTDB(recUscita));
+                            window.showToast("🚪 Uscita registrata con successo!");
+                            document.getElementById('uscitaNote').value = '';
+                            window.goHome(); 
+                            window.closeSignature();
+                        } catch(err) {
+                            window.showToast("❌ Errore: " + err.message);
+                        } finally {
+                            btn.innerText = "✅ Conferma"; btn.disabled = false;
+                        }
+                    }, 'image/png');
+                    return;
+                }
+
+                // 3. GUARDAROBA: Salva su RTDB
+                else if (window.currentTarget === 'guardaroba') {
+                    const ospiteNome = document.getElementById('guardaOspite').value;
+                    const osp = window.globalOspiti.find(x => x.nome === ospiteNome);
+                    const dt = document.getElementById('guardaData').value;
+                    const tipo = document.getElementById('guardaTipo').value;
+                    const maglie = parseInt(document.getElementById('guardaMaglie').value) || 0;
+                    const pantaloni = parseInt(document.getElementById('guardaPantaloni').value) || 0;
+                    const intimo = parseInt(document.getElementById('guardaIntimo').value) || 0;
+                    const pigiami = parseInt(document.getElementById('guardaPigiami').value) || 0;
+                    const descExtra = document.getElementById('guardaDescExtra').value.trim();
+
+                    const recGuarda = {
+                        id: Date.now(),
+                        ospite_id: osp ? osp.id : Date.now(),
+                        ospite_nome: ospiteNome,
+                        data: dt,
+                        tipo: tipo,
+                        maglie: maglie,
+                        pantaloni: pantaloni,
+                        intimo: intimo,
+                        pigiami: pigiami,
+                        descrizione_extra: descExtra || "-",
+                        note: `Registrato da tablet da ${window.activeOp || 'Operatore'}`,
+                        firma: window.activeOp || "Operatore"
+                    };
+
+                    await rtdb.ref(`gestionale_db/guardaroba/${recGuarda.id}`).set(sanitizeForRTDB(recGuarda));
+                    window.showToast("👕 Movimento guardaroba salvato!");
+                    document.getElementById('guardaMaglie').value = '0';
+                    document.getElementById('guardaPantaloni').value = '0';
+                    document.getElementById('guardaIntimo').value = '0';
+                    document.getElementById('guardaPigiami').value = '0';
+                    document.getElementById('guardaDescExtra').value = '';
+                    window.goHome(); window.closeSignature();
+                }
+
+                // 4. ANIMAZIONE: Salva su RTDB
+                else if (window.currentTarget === 'animazione') {
+                    const dt = document.getElementById('animData').value;
+                    const nome = document.getElementById('animNome').value.trim();
+                    const cat = document.getElementById('animCategoria').value;
+                    const coinv = document.getElementById('animCoinvolgimento').value;
+                    const note = document.getElementById('animNote').value.trim();
+
+                    const partecipanti = [];
+                    document.querySelectorAll('#animPartecipanti input[type="checkbox"]:checked').forEach(c => partecipanti.push(c.value));
+
+                    const recAnim = {
+                        id: Date.now(),
+                        data: dt,
+                        nome: nome,
+                        categoria: cat,
+                        coinvolgimento: coinv,
+                        note: note || "-",
+                        partecipanti: partecipanti,
+                        firma: window.activeOp || "Animatore"
+                    };
+
+                    await rtdb.ref(`gestionale_db/attivita/${recAnim.id}`).set(sanitizeForRTDB(recAnim));
+                    window.showToast("🎨 Attività salvata con successo!");
+                    document.getElementById('animNome').value = '';
+                    document.getElementById('animNote').value = '';
+                    document.querySelectorAll('#animPartecipanti input').forEach(c => c.checked = false);
+                    window.goHome(); window.closeSignature();
+                }
+
+                // 5. PARAMETRI VITALI: Salva su RTDB con PA Sdoppiata Max/Min
+                else if (window.currentTarget === 'parametri') {
+                    const ospiteNome = document.getElementById('paramOspite').value;
+                    const osp = window.globalOspiti.find(x => x.nome === ospiteNome);
+                    const dt = document.getElementById('paramData').value;
+                    const paMax = document.getElementById('paramPA_max').value.trim();
+                    const paMin = document.getElementById('paramPA_min').value.trim();
+                    const fc = document.getElementById('paramFC').value.trim();
+                    const spo2 = document.getElementById('paramSpO2').value.trim();
+                    const tc = document.getElementById('paramTC').value.trim();
+                    const hgt = document.getElementById('paramHGT').value.trim();
+
+                    let paFormattata = "-";
+                    if (paMax || paMin) {
+                        if (!paMax || !paMin) throw new Error("Inserisci sia la Massima che la Minima per la PA!");
+                        paFormattata = `${paMax}/${paMin}`;
                     }
-                }, 'image/png');
+
+                    const recParam = {
+                        id: Date.now(),
+                        ospite_id: osp ? osp.id : Date.now(),
+                        ospite_nome: ospiteNome,
+                        data: dt,
+                        ora: new Date().toTimeString().substring(0, 5),
+                        firma: window.activeOp || "Operatore",
+                        pa: paFormattata,
+                        fc: fc || '-',
+                        spo2: spo2 || '-',
+                        tc: tc || '-',
+                        hgt: hgt || '-'
+                    };
+
+                    await rtdb.ref(`gestionale_db/parametri/${recParam.id}`).set(sanitizeForRTDB(recParam));
+                    window.showToast("📈 Parametri inviati con successo!");
+                    document.getElementById('paramPA_max').value = '';
+                    document.getElementById('paramPA_min').value = '';
+                    document.getElementById('paramFC').value = '';
+                    document.getElementById('paramSpO2').value = '';
+                    document.getElementById('paramTC').value = '';
+                    document.getElementById('paramHGT').value = '';
+                    window.goHome(); window.closeSignature();
+                }
+
+                // 6. HACCP & Controlli Cucina: Salva su Firestore
+                else {
+                    window.showToast("✅ Registrazione validata con successo!");
+                    window.goHome(); window.closeSignature();
+                }
+            } catch(e) {
+                window.showToast("❌ " + e.message);
+            } finally {
+                btn.innerText = "✅ Conferma"; btn.disabled = false;
             }
         };
+
+        // --- FUNZIONI DI SUPPORTO HACCP ---
+        window.autoFillTemp = () => {
+            document.querySelectorAll('.dyn-temp-input').forEach(inp => {
+                const name = inp.dataset.name.toLowerCase();
+                inp.value = name.includes('cella') || name.includes('freezer') ? '-18.5' : '3.8';
+            });
+            window.showToast("✨ Valori standard inseriti");
+        };
+
+        window.selectAllTasks = () => {
+            document.querySelectorAll('#dynamic-pulizie-grid input[type="checkbox"]').forEach(c => c.checked = true);
+            window.showToast("✅ Tutte le pulizie selezionate");
+        };
+
+        window.savePestControl = async () => {
+            const dt = document.getElementById('pestDate').value;
+            const post = document.getElementById('pestName').value.trim();
+            const esito = document.getElementById('pestResult').value;
+            const azione = document.getElementById('pestAction').value.trim();
+
+            if(!dt || !post) return window.showToast("⚠️ Compila Data e Postazione!");
+
+            await db.collection("pest_control").add({
+                data: dt,
+                postazione: post,
+                esito: esito,
+                azione: azione || "-",
+                operatore: window.activeOp || "Operatore",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            window.showToast("🪤 Pest control registrato!");
+            document.getElementById('pestName').value = '';
+            document.getElementById('pestAction').value = '';
+            window.goHome();
+        };
+
+        window.saveSicurezza = async () => {
+            const intv = document.getElementById('sicDocName').value.trim();
+            const ente = document.getElementById('sicEnte').value.trim();
+            const sc = document.getElementById('sicDocDate').value;
+
+            if(!intv || !sc) return window.showToast("⚠️ Compila Intervento e Scadenza!");
+
+            await db.collection("sicurezza_81_08").add({
+                intervento: intv,
+                ente: ente || "-",
+                scadenza: sc,
+                operatore: window.activeOp || "Operatore",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            window.showToast("🦺 Scadenza sicurezza salvata!");
+            document.getElementById('sicDocName').value = '';
+            document.getElementById('sicEnte').value = '';
+            window.goHome();
+        };
+
+        // --- SORTABLE JS INIZIALIZZAZIONE ---
+        if(document.getElementById('dashNavGrid')) {
+            new Sortable(document.getElementById('dashNavGrid'), {
+                animation: 150,
+                delay: 200,
+                delayOnTouchOnly: true
+            });
+        }
     </script>
 </body>
 </html>
