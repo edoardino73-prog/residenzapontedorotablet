@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Anagrafica & Privacy - Tablet Edition</title>
+    
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: #f1f5f9; 
+            color: #0f172a; 
+            padding: 16px;
+            font-size: 15px;
+        }
+
+        .page-container { max-width: 1300px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+
+        /* BARRA RICHIAMO RAPIDO OSPITE ESISTENTE */
+        .quick-select-bar {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .quick-select-bar label {
+            font-weight: 700;
+            color: #166534;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .quick-select-bar select {
+            flex: 1;
+            min-width: 260px;
+            border-color: #86efac;
+            font-weight: 600;
+            color: #14532d;
+        }
+
+        .form-box { background: #f8fafc; padding: 18px; border-radius: 12px; border: 1.5px solid #e2e8f0; margin-bottom: 20px; }
+        .form-section-title { width: 100%; font-size: 13px; color: #0284c7; border-bottom: 1px dashed #cbd5e1; margin-top: 18px; margin-bottom: 12px; padding-bottom: 4px; text-transform: uppercase; font-weight: bold; }
+        
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 5px; }
+        
+        /* TOUCH CONTROLS TABLET (MIN 46px) */
+        input, select, textarea { 
+            padding: 11px 13px; 
+            border: 1.5px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            font-family: inherit; 
+            min-height: 46px;
+            background: white;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #0284c7; }
+
+        .req-alloggiati-rosa {
+            border: 2px solid #f43f5e !important;
+            background-color: #fff1f2 !important;
+        }
+
+        .alert-rosa-box { background: #ffe4e6; border: 1px solid #fecdd3; border-radius: 8px; padding: 12px; font-size: 13px; color: #9f1239; margin-bottom: 15px; }
+
+        .privacy-box { background: #fff; padding: 14px; border: 1px solid #cbd5e1; border-radius: 10px; }
+        .privacy-item { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #f1f5f9; display: flex; gap: 12px; align-items: flex-start; }
+        .privacy-item input[type="checkbox"] { transform: scale(1.4); margin-top: 4px; accent-color: #0284c7; }
+        .privacy-item-text { font-size: 13px; color: #334155; line-height: 1.4; }
+
+        .btn { 
+            padding: 0 16px; 
+            min-height: 46px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: white; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 14px; 
+            text-decoration: none; 
+            touch-action: manipulation;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background-color: #0284c7; }
+        .btn-success { background-color: #16a34a; }
+        .btn-warning { background-color: #f59e0b; }
+        .btn-dark { background-color: #1e293b; }
+        .btn-sm { min-height: 38px; padding: 0 12px; font-size: 12px; }
+
+        /* MINIATURE INTERATTIVE APRIBILI E STAMPABILI */
+        .thumb-doc-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            min-height: 46px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .thumb-doc-card:hover {
+            border-color: #0284c7;
+            background: #f0f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .thumb-img { width: 38px; height: 38px; border-radius: 6px; object-fit: cover; border: 1px solid #cbd5e1; }
+        .thumb-icon-pdf { width: 38px; height: 38px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 11px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th { background-color: #f8fafc; }
+
+        /* MODALI TOUCH */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: white; padding: 20px; border-radius: 14px; width: 100%; max-width: 650px; max-height: 92vh; overflow-y: auto; }
+        #canvas-firma { border: 2px dashed #94a3b8; border-radius: 8px; background: #f8fafc; touch-action: none; display: block; margin: 10px auto; width: 100%; max-width: 550px; height: 200px; }
+
+        #foglio-stampa-container { display: none; }
+        @media print {
+            .no-print { display: none !important; }
+            .page-container { display: none !important; }
+            #foglio-stampa-container { display: block !important; padding: 15mm; font-family: 'Times New Roman', serif; font-size: 11.5pt; line-height: 1.45; }
+        }
+    </style>
+</head>
+<body>
+    <!-- MODALE ANTEPRIMA DOCUMENTO E IMMAGINE (CON STAMPA) -->
+    <div id="modal-anteprima-doc" class="modal-overlay no-print">
+        <div class="modal-content" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 id="doc-viewer-titolo" style="margin:0; font-size:16px;">Visualizzatore Documento / Foto</h3>
+                <button type="button" class="btn btn-dark btn-sm" onclick="chiudiAnteprimaDoc()">❌ Chiudi</button>
+            </div>
+            <div id="doc-viewer-frame-container" style="flex:1; background:#f1f5f9; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;"></div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-warning" onclick="stampaDocumentoCorrente()">🖨️ Stampa Immagine / File</button>
+                <button type="button" class="btn btn-primary" id="btn-apri-file-esterno">💾 Scarica / Apri a Schermo Intero</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE FIRMA TOUCH TABLET -->
+    <div id="modal-firma" class="modal-overlay no-print">
+        <div class="modal-content">
+            <h3 style="margin:0 0 6px 0; color:#0284c7;">✍️ Verbale Firma Digitale Tablet</h3>
+            <div class="form-row">
+                <div class="form-group"><label>Nome Firmatario *</label><input type="text" id="firmatario_nome_cognome"></div>
+                <div class="form-group"><label>CF Firmatario *</label><input type="text" id="firmatario_cf" maxlength="16"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Titolo Giuridico / Qualifica *</label>
+                    <select id="firmatario_qualifica">
+                        <option value="Ospite in proprio">Ospite in proprio</option>
+                        <option value="Amministratore di Sostegno (AdS)">Amministratore di Sostegno (AdS)</option>
+                        <option value="Tutore Legale">Tutore Legale</option>
+                        <option value="Familiare / Delegato">Familiare / Delegato</option>
+                    </select>
+                </div>
+            </div>
+            <label style="margin-top:6px; display:block;">Firma nel riquadro con dito o pennino touch:</label>
+            <canvas id="canvas-firma"></canvas>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button type="button" class="btn btn-warning" style="flex:1;" onclick="pulisciCanvasFirma()">🗑️ Riscrivi</button>
+                <button type="button" class="btn btn-success" style="flex:2;" id="btn-salva-firma" onclick="confermaFirmaTablet()">✅ Salva e Congela Firma</button>
+            </div>
+            <button type="button" class="btn btn-dark" style="margin-top:8px; width:100%;" onclick="chiudiModalFirma()">❌ Annulla</button>
+        </div>
+    </div>
+
+    <div id="foglio-stampa-container"></div>
+
+    <div class="page-container no-print">
+        <div class="header-bar">
+            <div>
+                <h2 style="margin:0; font-size:20px;">👥 Fascicolo Anagrafico, Tutori & Consensi</h2>
+                <small style="color: #64748b;">Gestione Giuridica e Privacy Ospiti - Residenza Ponte D'Oro</small>
+            </div>
+            <a href="index.html" class="btn btn-dark">🏛️ Torna al Reparto</a>
+        </div>
+
+        <!-- BARRA RICHIAMO RAPIDO OSPITE PER MODIFICA -->
+        <div class="quick-select-bar">
+            <label for="selettore_rapido_ospite">🔍 Modifica Ospite Esistente:</label>
+            <select id="selettore_rapido_ospite" onchange="richiamaOspiteSelezionato(this.value)">
+                <option value="">-- Seleziona un ospite registrato per caricarne i dati --</option>
+            </select>
+            <button type="button" class="btn btn-dark btn-sm" onclick="annullaModificaOspite()">➕ Nuovo Ospite</button>
+        </div>
+
+        <div class="alert-rosa-box">
+            🌸 <strong>Alloggiati Web:</strong> I campi bordati di rosa sono obbligatori per legge ai fini dell'esportazione verso la Polizia di Stato.
+        </div>
+
+        <div class="form-box">
+            <h3 style="margin-bottom:12px; color:#0284c7;" id="titolo_form_ospite">Nuova Iscrizione Scheda Ospite</h3>
+            <input type="hidden" id="osp_edit_id">
+
+            <div class="form-section-title">1. Dati Anagrafici & Foto Profilo</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Foto Tessera Profilo</label>
+                    <input type="file" id="osp_file_foto" accept="image/*">
+                    <div id="thumb_box_foto"></div>
+                </div>
+                <div class="form-group"><label>Cognome *</label><input type="text" id="osp_cognome" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Nome *</label><input type="text" id="osp_nome" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Sesso *</label><select id="osp_sesso" class="req-alloggiati-rosa"><option value="1">1 - Maschio (M)</option><option value="2">2 - Femmina (F)</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Codice Fiscale *</label><input type="text" id="osp_cf" class="req-alloggiati-rosa" maxlength="16"></div>
+                <div class="form-group"><label>Data Nascita *</label><input type="date" id="osp_dob" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Comune Nascita *</label><input type="text" id="osp_comune_nas" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Prov. Nascita *</label><input type="text" id="osp_prov_nas" class="req-alloggiati-rosa" maxlength="2"></div>
+                <div class="form-group"><label>Cod. ISTAT Nascita *</label><input type="text" id="osp_cod_nas" class="req-alloggiati-rosa"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Indirizzo Residenza</label><input type="text" id="osp_indirizzo"></div>
+                <div class="form-group"><label>Comune Residenza</label><input type="text" id="osp_comune_res"></div>
+                <div class="form-group"><label>Prov. Residenza</label><input type="text" id="osp_prov_res" maxlength="2"></div>
+                <div class="form-group"><label>Cod. ISTAT Residenza</label><input type="text" id="osp_cod_res"></div>
+                <div class="form-group"><label>Data Ingresso in Struttura *</label><input type="date" id="osp_ingresso" class="req-alloggiati-rosa"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Tipo Documento *</label><select id="osp_doc_tipo" class="req-alloggiati-rosa"><option>Carta d'Identità</option><option>CIE</option><option>Passaporto</option><option>Patente</option></select></div>
+                <div class="form-group"><label>Numero Doc. *</label><input type="text" id="osp_doc_num" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Comune Rilascio *</label><input type="text" id="osp_doc_comune" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Prov. Rilascio *</label><input type="text" id="osp_doc_prov" class="req-alloggiati-rosa" maxlength="2"></div>
+                <div class="form-group"><label>Cod. ISTAT Rilascio *</label><input type="text" id="osp_doc_cod_comune" class="req-alloggiati-rosa"></div>
+                <div class="form-group"><label>Scadenza Doc. *</label><input type="date" id="osp_doc_scadenza"></div>
+            </div>
+
+            <div class="form-section-title">2. Tutela Giuridica e Referenti</div>
+            <div class="form-row">
+                <div class="form-group"><label>Familiare Referente</label><input type="text" id="osp_fam_nome"></div>
+                <div class="form-group"><label>Parentela</label><select id="osp_fam_parentela"><option>Figlio/a</option><option>Coniuge</option><option>Fratello/Sorella</option><option>Nipote</option><option>Altro</option></select></div>
+                <div class="form-group"><label>Telefono Familiare</label><input type="text" id="osp_fam_tel"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Amministratore Sostegno (AdS)</label><input type="text" id="osp_ads_nome"></div>
+                <div class="form-group"><label>Telefono AdS</label><input type="text" id="osp_ads_tel"></div>
+                <div class="form-group"><label>Decreto Nomina AdS (Tribunale / R.G.)</label><input type="text" id="osp_ads_decreto"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Medico di Base (MMG)</label><input type="text" id="osp_mmg_nome"></div>
+                <div class="form-group"><label>Telefono MMG</label><input type="text" id="osp_mmg_tel"></div>
+            </div>
+
+            <div class="form-section-title">3. Consensi e Firma Tablet</div>
+            <div class="privacy-box">
+                <div class="privacy-item"><input type="checkbox" id="chk_privacy_dati" checked><div class="privacy-item-text"><strong>A) Trattamento Dati Sanitari (GDPR):</strong> Trattamento cartella clinica e P.A.I.</div></div>
+                <div class="privacy-item"><input type="checkbox" id="chk_consenso_cure" checked><div class="privacy-item-text"><strong>B) Prestazioni Socio-Sanitarie (L. 219/2017):</strong> Consenso al piano assistenziale e cure quotidiane.</div></div>
+                <div class="privacy-item"><input type="checkbox" id="chk_privacy_foto"><div class="privacy-item-text"><strong>C) Immagini/Foto:</strong> Uso foto per scheda di riconoscimento interna.</div></div>
+                
+                <div id="stato-firma-riepilogo" style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px; border-radius:8px; margin-top:8px;">
+                    <span id="testo-stato-firma" style="color:#64748b; font-weight:bold;">In attesa di firma su tablet...</span>
+                    <div id="anteprima-firma-box" style="display:none; margin-top:6px;">
+                        <img id="img-anteprima-firma" src="" style="max-height:55px; border:1px solid #ddd; background:#fff; padding:3px; border-radius:4px;">
+                        <div id="dettagli-firmatario-text" style="font-size:12px; margin-top:4px;"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" style="margin-top:10px; width:100%;" onclick="apriModalFirma()">✍️ Acquisisci Firma su Tablet</button>
+            </div>
+
+            <div class="form-section-title">4. Documenti Cartacei e Allegati Acquisiti</div>
+            <div class="form-row">
+                <div class="form-group"><label>📎 Doc. Identità</label><input type="file" id="osp_file_doc"><div id="thumb_box_doc"></div></div>
+                <div class="form-group"><label>📎 Tessera Sanitaria</label><input type="file" id="osp_file_ts"><div id="thumb_box_ts"></div></div>
+                <div class="form-group"><label>📎 Certificato</label><input type="file" id="osp_file_cert"><div id="thumb_box_cert"></div></div>
+                <div class="form-group"><label>📎 Contratto</label><input type="file" id="osp_file_contratto"><div id="thumb_box_contratto"></div></div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                <button class="btn btn-success" style="flex:2;" id="btn_salva_ospite" onclick="salvaOspiteCompleto()">💾 Salva Scheda</button>
+                <button class="btn btn-dark" style="flex:1; display:none;" id="btn_annulla_modifica" onclick="annullaModificaOspite()">Annulla</button>
+            </div>
+        </div>
+
+        <h3>Elenco Fascicoli Registrati</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>Foto</th><th>Nominativo & CF</th><th>Ingresso</th><th>Referenti</th><th>Documenti Allegati</th><th>Stato</th><th>Azioni</th></tr></thead>
+                <tbody id="tabella-ospiti-corpo"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
+            messagingSenderId: "646708586773",
+            appId: "1:646708586773:web:a9d1956abdf72ace4ba11c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+        const fbStorage = firebase.storage();
+
+        let dbOspiti = [];
+        let firmaTemporanea = null;
+        let documentoAttivoPerStampa = null;
+
+        function forceArray(data) {
+            if (!data) return [];
+            return (Array.isArray(data) ? data : Object.values(data).filter(item => item !== null)).sort((a,b) => b.id - a.id);
+        }
+        function formattaData(iso) { 
+            if(!iso) return "-"; 
+            const p = iso.split('-'); 
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso; 
+        }
+
+        firebase.auth().signInAnonymously().catch(e => console.error(e));
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) {
+                fbDb.ref('gestionale_db/ospiti').on('value', snap => {
+                    dbOspiti = forceArray(snap.val());
+                    popolaTendinaRichiamoRapido();
+                    renderTabellaOspiti();
+                    verificaUrlOspiteParam();
+                });
+            }
+        });
+
+        /* VERIFICA PARAMETRO URL ?id=... PER CARICAMENTO AUTOMATICO */
+        function verificaUrlOspiteParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
+            if (idParam && dbOspiti.length > 0) {
+                richiamaOspiteSelezionato(idParam);
+            }
+        }
+
+        /* POPOLAMENTO SELETTORE RAPIDO OSPITE ESISTENTE */
+        function popolaTendinaRichiamoRapido() {
+            const sel = document.getElementById('selettore_rapido_ospite');
+            if (!sel) return;
+            const idAttivo = document.getElementById('osp_edit_id').value;
+            sel.innerHTML = '<option value="">-- Seleziona un ospite registrato per caricarne i dati --</option>';
+            dbOspiti.forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o.id;
+                opt.text = `${o.nome} (CF: ${o.cf || '-'})`;
+                sel.appendChild(opt);
+            });
+            if (idAttivo) sel.value = idAttivo;
+        }
+
+        function richiamaOspiteSelezionato(id) {
+            if (!id) {
+                annullaModificaOspite();
+                return;
+            }
+            modificaOspite(id);
+        }
+
+        /* VISUALIZZATORE E STAMPA DELLE MINIATURE */
+        function apriAnteprimaDoc(url, titolo) {
+            if (!url) return;
+            documentoAttivoPerStampa = { url: url, titolo: titolo || "Documento" };
+            const modal = document.getElementById('modal-anteprima-doc');
+            const cont = document.getElementById('doc-viewer-frame-container');
+            document.getElementById('doc-viewer-titolo').innerText = `📄 ${titolo || 'Documento'}`;
+            cont.innerHTML = '';
+
+            const isPdf = url.toLowerCase().includes('.pdf') || url.startsWith('data:application/pdf');
+            if (isPdf) {
+                cont.innerHTML = `<iframe src="${url}" style="width:100%; height:100%; border:none;"></iframe>`;
+            } else {
+                cont.innerHTML = `<img src="${url}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:6px;">`;
+            }
+
+            document.getElementById('btn-apri-file-esterno').onclick = () => window.open(url, '_blank');
+            modal.style.display = 'flex';
+        }
+
+        function chiudiAnteprimaDoc() {
+            document.getElementById('modal-anteprima-doc').style.display = 'none';
+        }
+
+        function stampaDocumentoCorrente() {
+            if (!documentoAttivoPerStampa?.url) return;
+            const w = window.open('', '_blank');
+            const isPdf = documentoAttivoPerStampa.url.toLowerCase().includes('.pdf');
+            if (isPdf) {
+                w.location.href = documentoAttivoPerStampa.url;
+            } else {
+                w.document.write(`
+                    <html>
+                    <head>
+                        <title>Stampa ${documentoAttivoPerStampa.titolo}</title>
+                        <style>
+                            body { margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#fff; }
+                            img { max-width:98%; max-height:98vh; object-fit:contain; }
+                        </style>
+                    </head>
+                    <body onload="window.print();window.close();">
+                        <img src="${documentoAttivoPerStampa.url}">
+                    </body>
+                    </html>
+                `);
+                w.document.close();
+            }
+        }
+
+        function generaHtmlMiniatura(allegato, label) {
+            if (!allegato?.dati) return '';
+            const isPdf = allegato.dati.toLowerCase().includes('.pdf');
+            const icon = isPdf ? `<div class="thumb-icon-pdf">PDF</div>` : `<img src="${allegato.dati}" class="thumb-img" alt="${label}">`;
+            return `
+                <div class="thumb-doc-card" onclick="apriAnteprimaDoc('${allegato.dati}', '${label}')" title="Tocca per ingrandire o stampare">
+                    ${icon}
+                    <div>
+                        <strong style="color:#0f172a; font-size:12.5px;">${label}</strong><br>
+                        <small style="color:#0284c7; text-decoration:underline;">👁️ Apri & Stampa</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* CANVAS FIRMA TABLET */
+        let canvasFirma = null, ctxFirma = null, isDisegnando = false;
+
+        function initCanvasFirma() {
+            canvasFirma = document.getElementById('canvas-firma');
+            const rect = canvasFirma.getBoundingClientRect();
+            canvasFirma.width = rect.width;
+            canvasFirma.height = rect.height;
+
+            ctxFirma = canvasFirma.getContext('2d');
+            ctxFirma.lineWidth = 3;
+            ctxFirma.lineCap = 'round';
+            ctxFirma.strokeStyle = '#0f172a';
+
+            const getPos = e => {
+                const r = canvasFirma.getBoundingClientRect();
+                const cl = e.touches ? e.touches[0] : e;
+                return { x: cl.clientX - r.left, y: cl.clientY - r.top };
+            };
+
+            canvasFirma.addEventListener('mousedown', e => { isDisegnando = true; ctxFirma.beginPath(); const p = getPos(e); ctxFirma.moveTo(p.x, p.y); });
+            canvasFirma.addEventListener('mousemove', e => { if(!isDisegnando) return; const p = getPos(e); ctxFirma.lineTo(p.x, p.y); ctxFirma.stroke(); });
+            canvasFirma.addEventListener('mouseup', () => isDisegnando = false);
+            canvasFirma.addEventListener('touchstart', e => { isDisegnando = true; ctxFirma.beginPath(); const p = getPos(e); ctxFirma.moveTo(p.x, p.y); e.preventDefault(); }, {passive:false});
+            canvasFirma.addEventListener('touchmove', e => { if(!isDisegnando) return; const p = getPos(e); ctxFirma.lineTo(p.x, p.y); ctxFirma.stroke(); e.preventDefault(); }, {passive:false});
+            canvasFirma.addEventListener('touchend', () => isDisegnando = false);
+        }
+
+        function apriModalFirma() {
+            document.getElementById('modal-firma').style.display = 'flex';
+            setTimeout(initCanvasFirma, 60);
+        }
+        function chiudiModalFirma() { document.getElementById('modal-firma').style.display = 'none'; }
+        function pulisciCanvasFirma() { if(ctxFirma) ctxFirma.clearRect(0,0,canvasFirma.width,canvasFirma.height); }
+
+        function confermaFirmaTablet() {
+            const nome = document.getElementById('firmatario_nome_cognome').value.trim();
+            const cf = document.getElementById('firmatario_cf').value.trim().toUpperCase();
+            const qual = document.getElementById('firmatario_qualifica').value;
+            if(!nome || !cf) return alert("Compila Nome e Codice Fiscale del firmatario!");
+
+            const blank = document.createElement('canvas');
+            blank.width = canvasFirma.width; blank.height = canvasFirma.height;
+            if(canvasFirma.toDataURL() === blank.toDataURL()) return alert("Apponi la firma nel riquadro prima di salvare!");
+
+            canvasFirma.toBlob(async blob => {
+                const ref = fbStorage.ref().child(`uploads/firme_privacy/${Date.now()}.png`);
+                await ref.put(blob);
+                const url = await ref.getDownloadURL();
+
+                firmaTemporanea = {
+                    firma_url: url,
+                    firmatario_nome: nome,
+                    firmatario_cf: cf,
+                    firmatario_qualifica: qual,
+                    data_ora_sottoscrizione: new Date().toISOString()
+                };
+
+                aggiornaVistaStatoFirma(firmaTemporanea);
+                chiudiModalFirma();
+            }, 'image/png');
+        }
+
+        function aggiornaVistaStatoFirma(info) {
+            const tBox = document.getElementById('testo-stato-firma');
+            const pBox = document.getElementById('anteprima-firma-box');
+            if(info?.firma_url) {
+                tBox.innerHTML = `<span style="color:#16a34a;">🔒 Firma Acquisita e Congelata</span>`;
+                pBox.style.display = 'block';
+                document.getElementById('img-anteprima-firma').src = info.firma_url;
+                document.getElementById('dettagli-firmatario-text').innerText = `${info.firmatario_nome} (${info.firmatario_qualifica}) - CF: ${info.firmatario_cf}`;
+            } else {
+                tBox.innerHTML = `<span style="color:#64748b;">In attesa di firma su tablet...</span>`;
+                pBox.style.display = 'none';
+            }
+        }
+
+        function leggiFile(id, cartella) {
+            return new Promise(async resolve => {
+                const f = document.getElementById(id)?.files?.[0];
+                if(!f) return resolve(null);
+                const ref = fbStorage.ref().child(`uploads/${cartella}/${Date.now()}_${f.name}`);
+                await ref.put(f);
+                const url = await ref.getDownloadURL();
+                resolve({ nome: f.name, dati: url });
+            });
+        }
+
+        async function salvaOspiteCompleto() {
+            const editId = document.getElementById('osp_edit_id').value;
+            const cognome = document.getElementById('osp_cognome').value.trim();
+            const nome = document.getElementById('osp_nome').value.trim();
+            const cf = document.getElementById('osp_cf').value.trim().toUpperCase();
+            if(!cognome || !nome || !cf) return alert("Compila i campi obbligatori con bordo rosa!");
+
+            const foto = await leggiFile('osp_file_foto', 'foto_profili');
+            const doc = await leggiFile('osp_file_doc', 'documenti');
+            const ts = await leggiFile('osp_file_ts', 'documenti');
+            const cert = await leggiFile('osp_file_cert', 'certificati');
+            const contr = await leggiFile('osp_file_contratto', 'contratti');
+
+            let recordOspite = editId ? dbOspiti.find(o => String(o.id) === String(editId)) : {};
+            const nuovoId = editId ? parseInt(editId) : Date.now();
+
+            const payload = {
+                id: nuovoId,
+                nome: `${cognome.toUpperCase()} ${nome.toUpperCase()}`,
+                cognome: cognome.toUpperCase(),
+                nome_puro: nome.toUpperCase(),
+                sesso: document.getElementById('osp_sesso').value,
+                cf: cf,
+                dob: document.getElementById('osp_dob').value,
+                ingresso: document.getElementById('osp_ingresso').value,
+                luogo_nascita: {
+                    comune: document.getElementById('osp_comune_nas').value.trim(),
+                    prov: document.getElementById('osp_prov_nas').value.trim().toUpperCase(),
+                    codice_alloggiati: document.getElementById('osp_cod_nas').value.trim()
+                },
+                residenza: {
+                    indirizzo: document.getElementById('osp_indirizzo').value.trim(),
+                    comune: document.getElementById('osp_comune_res').value.trim(),
+                    prov: document.getElementById('osp_prov_res').value.trim().toUpperCase(),
+                    codice_alloggiati: document.getElementById('osp_cod_res').value.trim()
+                },
+                documento: {
+                    tipo: document.getElementById('osp_doc_tipo').value,
+                    numero: document.getElementById('osp_doc_num').value.trim(),
+                    comune: document.getElementById('osp_doc_comune').value.trim(),
+                    prov: document.getElementById('osp_doc_prov').value.trim().toUpperCase(),
+                    codice_alloggiati_rilascio: document.getElementById('osp_doc_cod_comune').value.trim(),
+                    scadenza: document.getElementById('osp_doc_scadenza').value
+                },
+                familiare: {
+                    nome: document.getElementById('osp_fam_nome').value.trim(),
+                    parentela: document.getElementById('osp_fam_parentela').value,
+                    telefono: document.getElementById('osp_fam_tel').value.trim()
+                },
+                ads: {
+                    nome: document.getElementById('osp_ads_nome').value.trim(),
+                    tel: document.getElementById('osp_ads_tel').value.trim(),
+                    decreto_nomina: document.getElementById('osp_ads_decreto').value.trim()
+                },
+                mmg: {
+                    nome: document.getElementById('osp_mmg_nome').value.trim(),
+                    tel: document.getElementById('osp_mmg_tel').value.trim()
+                },
+                privacy: {
+                    dati_sanitari: document.getElementById('chk_privacy_dati').checked,
+                    consenso_cure_l219: document.getElementById('chk_consenso_cure').checked,
+                    foto_archivio: document.getElementById('chk_privacy_foto').checked,
+                    sottoscrizione: firmaTemporanea || recordOspite?.privacy?.sottoscrizione || null
+                },
+                allegati: {
+                    doc_identita: doc || recordOspite?.allegati?.doc_identita || null,
+                    tessera_sanitaria: ts || recordOspite?.allegati?.tessera_sanitaria || null,
+                    certificato: cert || recordOspite?.allegati?.certificato || null,
+                    contratto: contr || recordOspite?.allegati?.contratto || null
+                },
+                foto: foto || recordOspite?.foto || null,
+                fine_servizio: recordOspite?.fine_servizio || null
+            };
+
+            fbDb.ref(`gestionale_db/ospiti/${nuovoId}`).set(payload).then(() => {
+                alert("✅ Fascicolo salvato con successo!");
+                annullaModificaOspite();
+            });
+        }
+
+        function annullaModificaOspite() {
+            document.getElementById('osp_edit_id').value = '';
+            document.querySelectorAll('.form-box input:not([type="checkbox"])').forEach(i => i.value = '');
+            document.getElementById('titolo_form_ospite').innerText = "Nuova Iscrizione Scheda Ospite";
+            document.getElementById('btn_salva_ospite').innerText = "💾 Salva Scheda";
+            document.getElementById('btn_annulla_modifica').style.display = "none";
+            
+            ['thumb_box_foto', 'thumb_box_doc', 'thumb_box_ts', 'thumb_box_cert', 'thumb_box_contratto'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+
+            const sel = document.getElementById('selettore_rapido_ospite');
+            if (sel) sel.value = '';
+
+            firmaTemporanea = null;
+            aggiornaVistaStatoFirma(null);
+        }
+
+        function modificaOspite(id) {
+            const o = dbOspiti.find(x => String(x.id) === String(id));
+            if(!o) return;
+
+            document.getElementById('osp_edit_id').value = o.id;
+            
+            // Sincronizza selettore rapido in cima
+            const selRapido = document.getElementById('selettore_rapido_ospite');
+            if (selRapido) selRapido.value = o.id;
+
+            document.getElementById('osp_cognome').value = o.cognome || '';
+            document.getElementById('osp_nome').value = o.nome_puro || '';
+            document.getElementById('osp_sesso').value = o.sesso || '1';
+            document.getElementById('osp_cf').value = o.cf || '';
+            document.getElementById('osp_dob').value = o.dob || '';
+            document.getElementById('osp_comune_nas').value = o.luogo_nascita?.comune || '';
+            document.getElementById('osp_prov_nas').value = o.luogo_nascita?.prov || '';
+            document.getElementById('osp_cod_nas').value = o.luogo_nascita?.codice_alloggiati || '';
+            document.getElementById('osp_indirizzo').value = o.residenza?.indirizzo || '';
+            document.getElementById('osp_comune_res').value = o.residenza?.comune || '';
+            document.getElementById('osp_prov_res').value = o.residenza?.prov || '';
+            document.getElementById('osp_cod_res').value = o.residenza?.codice_alloggiati || '';
+            document.getElementById('osp_ingresso').value = o.ingresso || '';
+
+            document.getElementById('osp_doc_tipo').value = o.documento?.tipo || "Carta d'Identità";
+            document.getElementById('osp_doc_num').value = o.documento?.numero || '';
+            document.getElementById('osp_doc_comune').value = o.documento?.comune || '';
+            document.getElementById('osp_doc_prov').value = o.documento?.prov || '';
+            document.getElementById('osp_doc_cod_comune').value = o.documento?.codice_alloggiati_rilascio || '';
+            document.getElementById('osp_doc_scadenza').value = o.documento?.scadenza || '';
+
+            document.getElementById('osp_fam_nome').value = o.familiare?.nome || '';
+            document.getElementById('osp_fam_parentela').value = o.familiare?.parentela || 'Figlio/a';
+            document.getElementById('osp_fam_tel').value = o.familiare?.telefono || '';
+
+            document.getElementById('osp_ads_nome').value = o.ads?.nome || '';
+            document.getElementById('osp_ads_tel').value = o.ads?.tel || '';
+            document.getElementById('osp_ads_decreto').value = o.ads?.decreto_nomina || '';
+            document.getElementById('osp_mmg_nome').value = o.mmg?.nome || '';
+            document.getElementById('osp_mmg_tel').value = o.mmg?.tel || '';
+
+            // RENDER DELLE MINIATURE APRIBILI E STAMPABILI (INCLUSA LA FOTO)
+            document.getElementById('thumb_box_foto').innerHTML = generaHtmlMiniatura(o.foto, "Foto Profilo");
+            document.getElementById('thumb_box_doc').innerHTML = generaHtmlMiniatura(o.allegati?.doc_identita, "Doc. Identità");
+            document.getElementById('thumb_box_ts').innerHTML = generaHtmlMiniatura(o.allegati?.tessera_sanitaria, "Tessera Sanitaria");
+            document.getElementById('thumb_box_cert').innerHTML = generaHtmlMiniatura(o.allegati?.certificato, "Certificato");
+            document.getElementById('thumb_box_contratto').innerHTML = generaHtmlMiniatura(o.allegati?.contratto, "Contratto");
+
+            if(o.privacy) {
+                document.getElementById('chk_privacy_dati').checked = o.privacy.dati_sanitari !== false;
+                document.getElementById('chk_consenso_cure').checked = o.privacy.consenso_cure_l219 !== false;
+                document.getElementById('chk_privacy_foto').checked = o.privacy.foto_archivio === true;
+            }
+
+            firmaTemporanea = o.privacy?.sottoscrizione || null;
+            aggiornaVistaStatoFirma(firmaTemporanea);
+
+            document.getElementById('titolo_form_ospite').innerText = `✏️ Modifica Fascicolo: ${o.nome}`;
+            document.getElementById('btn_salva_ospite').innerText = "💾 Aggiorna Fascicolo Ospite";
+            document.getElementById('btn_annulla_modifica').style.display = "inline-flex";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderTabellaOspiti() {
+            const tbody = document.getElementById('tabella-ospiti-corpo');
+            tbody.innerHTML = '';
+            if(dbOspiti.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:15px; color:#64748b;">Nessun ospite trovato.</td></tr>';
+                return;
+            }
+
+            dbOspiti.forEach(o => {
+                const fotoHtml = o.foto?.dati 
+                    ? `<img src="${o.foto.dati}" style="width:42px;height:42px;border-radius:6px;object-fit:cover;cursor:pointer;" onclick="apriAnteprimaDoc('${o.foto.dati}', 'Foto di ${o.nome}')" title="Tocca per ingrandire">` 
+                    : '<div style="width:42px;height:42px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;">👤</div>';
+                
+                const statoFirma = o.privacy?.sottoscrizione?.firma_url 
+                    ? '<span style="color:#16a34a;font-weight:bold;">✅ Firmato</span>' 
+                    : '<span style="color:#f59e0b;font-weight:bold;">⚠️ Da firmare</span>';
+                
+                const allegatiList = [];
+                if(o.allegati?.doc_identita?.dati) allegatiList.push(generaHtmlMiniatura(o.allegati.doc_identita, "Doc"));
+                if(o.allegati?.tessera_sanitaria?.dati) allegatiList.push(generaHtmlMiniatura(o.allegati.tessera_sanitaria, "TS"));
+                if(o.allegati?.contratto?.dati) allegatiList.push(generaHtmlMiniatura(o.allegati.contratto, "Contr"));
+
+                tbody.innerHTML += `<tr>
+                    <td style="text-align:center;">${fotoHtml}</td>
+                    <td><strong>${o.nome}</strong><br><small style="color:#64748b;">${o.cf}</small></td>
+                    <td>${formattaData(o.ingresso)}</td>
+                    <td><small>${o.familiare?.nome || '-'}</small></td>
+                    <td>${allegatiList.join('') || '<small style="color:#aaa;">-</small>'}</td>
+                    <td>${statoFirma}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="modificaOspite(${o.id})">✏️ Modifica</button>
+                    </td>
+                </tr>`;
+            });
+        }
+    </script>
+</body>
+</html>

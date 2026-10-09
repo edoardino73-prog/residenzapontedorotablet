@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Fascicolo B.I.N.A. & P.A.I. - Tablet Edition</title>
+    
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: #f1f5f9; 
+            padding: 16px; 
+            color: #0f172a; 
+            font-size: 15px;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 18px; }
+        .tab-btn { flex: 1; min-height: 48px; font-weight: bold; font-size: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; background: #f8fafc; color: #475569; }
+        .tab-btn.active { background: #0f766e; color: white; border-color: #0f766e; }
+
+        .section-view { display: none; }
+        .section-view.active { display: block; }
+
+        .form-box { background: #f8fafc; padding: 18px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #0f766e; border: 1px solid #e2e8f0; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 12.5px; font-weight: 700; margin-bottom: 5px; color: #334155; }
+        
+        input, select, textarea { 
+            padding: 11px 13px; 
+            border: 1.5px solid #cbd5e1; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            font-family: inherit; 
+            min-height: 46px; 
+            background: white; 
+        }
+
+        /* GRIGLIA BINA ADATTIVA 10/11" TABLET */
+        .bina-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; background: #fff; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 15px; }
+        @media (orientation: portrait) {
+            .bina-grid { grid-template-columns: 1fr; }
+        }
+
+        .btn { 
+            padding: 0 16px; 
+            min-height: 46px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            color: white; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 14px; 
+            text-decoration: none; 
+            touch-action: manipulation;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background-color: #0284c7; }
+        .btn-success { background-color: #16a34a; }
+        .btn-warning { background-color: #f59e0b; }
+        .btn-danger { background-color: #dc2626; }
+        .btn-dark { background-color: #1e293b; }
+        .btn-auto { background: #0f766e; color: white; }
+        .btn-sm { min-height: 38px; padding: 0 12px; font-size: 12px; }
+
+        input.firma-carina { font-family: 'Caveat', cursive !important; font-size: 22px !important; text-align: center; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th { background-color: #f8fafc; }
+
+        #stampa-overlay { display: none; }
+        @media print {
+            .no-print { display: none !important; }
+            .container { display: none !important; }
+            #stampa-overlay { display: block !important; padding: 15mm; font-family: 'Times New Roman', serif; font-size: 11.5pt; }
+        }
+    </style>
+</head>
+<body>
+    <div id="stampa-overlay"></div>
+
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h2 style="margin:0; font-size:20px; color:#0f766e;">📋 B.I.N.A. & P.A.I.</h2>
+                <small style="color:#64748b;">Fascicolo Sanitario Tablet - Residenza Ponte D'Oro</small>
+            </div>
+            <a href="index.html" class="btn btn-dark">🏛️ Reparto</a>
+        </div>
+
+        <div class="tabs no-print">
+            <button class="tab-btn active" onclick="mostraTab('tab-bina', this)">📋 Valutazione B.I.N.A.</button>
+            <button class="tab-btn" onclick="mostraTab('tab-pai', this)">📝 Piano Assistenziale (P.A.I.)</button>
+        </div>
+
+        <!-- TAB BINA -->
+        <div id="tab-bina" class="section-view active">
+            <div class="form-box">
+                <div class="form-row">
+                    <div class="form-group"><label>Ospite *</label><select id="bina_ospite" onchange="filtraBinaPerOspite()"></select></div>
+                    <div class="form-group"><label>Data *</label><input type="date" id="bina_data"></div>
+                    <div class="form-group"><label>Tipo Certificazione</label><select id="bina_tipo_cert"><option>Prima certificazione</option><option>Ulteriore certificazione</option></select></div>
+                </div>
+
+                <div class="bina-grid">
+                    <div class="form-group"><label>1. Medicazioni</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Non necessarie (10 pt)</option><option value="30">Per ulcerazioni cutanee (30 pt)</option><option value="60">Per catetere a permanenza (60 pt)</option><option value="100">Per ulcere da decubito (100 pt)</option></select></div>
+                    <div class="form-group"><label>2. Prestazioni Sanitarie</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Buona salute (10 pt)</option><option value="30">Non continuative (30 pt)</option><option value="70">Prestazioni periodiche (70 pt)</option><option value="100">Cure quotidiane, PEG, O2 (100 pt)</option></select></div>
+                    <div class="form-group"><label>3. Controllo Sfinterico</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Presente (10 pt)</option><option value="30">Episodica (30 pt)</option><option value="70">Incontinenza urinaria O fecale (70 pt)</option><option value="100">Incontinenza totale (100 pt)</option></select></div>
+                    <div class="form-group"><label>4. Disturbi Cognitivi</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Assenti (10 pt)</option><option value="50">Lievi (50 pt)</option><option value="80">Senza agitazione grave (80 pt)</option><option value="100">Disturbante, aggressivo (100 pt)</option></select></div>
+                    <div class="form-group"><label>5. Linguaggio</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Normale (10 pt)</option><option value="40">Menomato ma esprime pensiero (40 pt)</option><option value="70">Comprende solo ordini semplici (70 pt)</option><option value="100">Non comprende né si esprime (100 pt)</option></select></div>
+                    <div class="form-group"><label>6. Deficit Sensoriali</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Normale (10 pt)</option><option value="20">Correggibile con protesi/occhiali (20 pt)</option><option value="80">Grave non correggibile (80 pt)</option><option value="100">Cecità / Sordità totale (100 pt)</option></select></div>
+                    <div class="form-group"><label>7. Mobilità</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Cammina autonomamente (10 pt)</option><option value="30">Cammina con ausili (30 pt)</option><option value="80">Solo sedia a ruote o aiuto (80 pt)</option><option value="100">Totalmente allettato (100 pt)</option></select></div>
+                    <div class="form-group"><label>8. Vita Quotidiana</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Totalmente indipendente (10 pt)</option><option value="20">Aiuto saltuario (20 pt)</option><option value="70">Parzialmente dipendente (70 pt)</option><option value="100">Totalmente dipendente (100 pt)</option></select></div>
+                    <div class="form-group"><label>9. Fattori Abitativi</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Abitazione idonea (10 pt)</option><option value="20">Barriere parziali (20 pt)</option><option value="70">Fruibilità impedita (70 pt)</option><option value="100">Totale inadeguatezza (100 pt)</option></select></div>
+                    <div class="form-group"><label>10. Rete Familiare</label><select class="bina-calc" onchange="calcolaBina()"><option value="10">Presente ed affidabile (10 pt)</option><option value="30">Parziale (30 pt)</option><option value="60">Solo se interpellata (60 pt)</option><option value="100">Nessun supporto (100 pt)</option></select></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Firma Infermiere</label>
+                        <input type="text" id="bina_firma_inf" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('bina_firma_inf', 'Infermiere')">✅ Firma Inf.</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Firma OSS</label>
+                        <input type="text" id="bina_firma_oss" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('bina_firma_oss', 'OSS')">✅ Firma OSS</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Firma Medico/Dir.</label>
+                        <input type="text" id="bina_firma_med" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('bina_firma_med', 'Medico')">✅ Firma Medico</button>
+                    </div>
+                </div>
+
+                <div id="bina_score_display" style="background:#fff; padding:15px; border-radius:10px; border:2px solid #cbd5e1; margin:15px 0; text-align:center; font-weight:bold; font-size:18px;">
+                    PUNTEGGIO: 100 - <span style="color:#059669;">AUTOSUFFICIENTE</span>
+                </div>
+
+                <input type="hidden" id="bina_score_totale" value="100">
+                <input type="hidden" id="bina_esito" value="AUTOSUFFICIENTE">
+                <button class="btn btn-auto" style="width:100%;" onclick="salvaBina()">💾 Registra Valutazione BINA</button>
+            </div>
+
+            <table>
+                <thead><tr><th>Data</th><th>Ospite</th><th>Punteggio / Esito</th><th>Firme</th><th>Azioni</th></tr></thead>
+                <tbody id="tabella-bina"></tbody>
+            </table>
+        </div>
+
+        <!-- TAB PAI -->
+        <div id="tab-pai" class="section-view">
+            <div class="form-box" style="border-left-color: #0f766e;">
+                <div class="form-row">
+                    <div class="form-group"><label>Ospite *</label><select id="pai_ospite" onchange="aggiornaPaiOspite()"></select></div>
+                    <div class="form-group"><label>Data P.A.I. *</label><input type="date" id="pai_data"></div>
+                </div>
+
+                <div id="pai_bina_badge" style="background:#e0f2fe; padding:10px; margin-bottom:12px; border-radius:8px; font-weight:bold; color:#0369a1; display:none;"></div>
+
+                <button type="button" class="btn btn-auto" style="width:100%; margin-bottom:14px;" onclick="compilaInteroPaiAutomatico()">
+                    ⚡ Compilazione Automatica Completa PAI (Basata su BINA)
+                </button>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label>1. Obiettivi di Salute e Assistenziali</label>
+                    <textarea id="pai_obiettivi" rows="3"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label>2. Interventi Sanitari e Infermieristici</label>
+                    <textarea id="pai_interventi" rows="3"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label>3. Area Socio-Relazionale ed Educativa</label>
+                    <textarea id="pai_sociale" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Firma Infermiere</label>
+                        <input type="text" id="pai_firma_inf" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('pai_firma_inf', 'Infermiere')">✅ Firma</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Firma OSS</label>
+                        <input type="text" id="pai_firma_oss" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('pai_firma_oss', 'OSS')">✅ Firma</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Firma Medico</label>
+                        <input type="text" id="pai_firma_med" class="firma-carina" placeholder="In attesa..." readonly>
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="apponiFirma('pai_firma_med', 'Medico')">✅ Firma</button>
+                    </div>
+                </div>
+                <button class="btn btn-success" style="width:100%; margin-top:14px;" onclick="salvaPai()">💾 Salva Scheda P.A.I.</button>
+            </div>
+
+            <div id="lista-pai-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
+            messagingSenderId: "646708586773",
+            appId: "1:646708586773:web:a9d1956abdf72ace4ba11c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+
+        let db = { ospiti: [], bina: [], pai: [] };
+
+        function forceArray(data) {
+            if (!data) return [];
+            return (Array.isArray(data) ? data : Object.values(data).filter(item => item !== null)).sort((a,b) => b.id - a.id);
+        }
+        function formattaData(iso) { 
+            if(!iso) return "-"; 
+            const p = iso.split('-'); 
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso; 
+        }
+
+        firebase.auth().signInAnonymously().catch(e => console.error(e));
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) {
+                fbDb.ref('gestionale_db').on('value', snap => {
+                    const d = snap.val() || {};
+                    db.ospiti = forceArray(d.ospiti);
+                    db.bina = forceArray(d.bina);
+                    db.pai = forceArray(d.pai);
+                    popolaSelettori();
+                    renderTabellaBina();
+                    renderPai();
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const oggi = new Date().toISOString().split('T')[0];
+            document.getElementById('bina_data').value = oggi;
+            document.getElementById('pai_data').value = oggi;
+            calcolaBina();
+        });
+
+        function mostraTab(id, btn) {
+            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function popolaSelettori() {
+            ['bina_ospite', 'pai_ospite'].forEach(selId => {
+                const sel = document.getElementById(selId);
+                const valPrec = sel.value;
+                sel.innerHTML = '<option value="">-- Seleziona Ospite --</option>';
+                db.ospiti.filter(o => !o.fine_servizio).forEach(o => {
+                    sel.options.add(new Option(o.nome, o.id));
+                });
+                if(valPrec) sel.value = valPrec;
+            });
+        }
+
+        function calcolaBina() {
+            let somma = 0;
+            document.querySelectorAll('.bina-calc').forEach(s => somma += parseInt(s.value) || 0);
+            const esito = somma > 230 ? "NON AUTOSUFFICIENTE" : "AUTOSUFFICIENTE";
+            const colore = somma > 230 ? "#dc2626" : "#16a34a";
+            document.getElementById('bina_score_totale').value = somma;
+            document.getElementById('bina_esito').value = esito;
+            document.getElementById('bina_score_display').innerHTML = `PUNTEGGIO: ${somma} - <span style="color:${colore};">${esito}</span> (Soglia: 230 pt)`;
+        }
+
+        function apponiFirma(campoId, ruolo) {
+            const nome = prompt(`Firma per ${ruolo}:`);
+            if(nome) document.getElementById(campoId).value = `${nome} (${new Date().toLocaleDateString('it-IT')})`;
+        }
+
+        function salvaBina() {
+            const idOspite = document.getElementById('bina_ospite').value;
+            const dataVal = document.getElementById('bina_data').value;
+            if(!idOspite || !dataVal) return alert("Seleziona Ospite e Data!");
+
+            const o = db.ospiti.find(x => String(x.id) === String(idOspite));
+            const record = {
+                id: Date.now(),
+                ospite_id: idOspite,
+                ospite_nome: o ? o.nome : "Ospite",
+                data: dataVal,
+                tipo_cert: document.getElementById('bina_tipo_cert').value,
+                punteggio: parseInt(document.getElementById('bina_score_totale').value) || 100,
+                esito: document.getElementById('bina_esito').value,
+                firme: {
+                    inf: document.getElementById('bina_firma_inf').value || null,
+                    oss: document.getElementById('bina_firma_oss').value || null,
+                    med: document.getElementById('bina_firma_med').value || null
+                }
+            };
+
+            fbDb.ref(`gestionale_db/bina/${record.id}`).set(record).then(() => {
+                alert("✅ Valutazione B.I.N.A. registrata!");
+                document.getElementById('bina_firma_inf').value = "";
+                document.getElementById('bina_firma_oss').value = "";
+                document.getElementById('bina_firma_med').value = "";
+            });
+        }
+
+        function filtraBinaPerOspite() { renderTabellaBina(); }
+
+        function renderTabellaBina() {
+            const tbody = document.getElementById('tabella-bina');
+            const ospId = document.getElementById('bina_ospite').value;
+            const lista = ospId ? db.bina.filter(b => String(b.ospite_id) === String(ospId)) : db.bina;
+            tbody.innerHTML = '';
+            if(lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px; color:#64748b;">Nessuna scheda.</td></tr>';
+                return;
+            }
+            lista.forEach(b => {
+                const o = db.ospiti.find(x => String(x.id) === String(b.ospite_id));
+                const colore = b.esito === 'AUTOSUFFICIENTE' ? '#16a34a' : '#dc2626';
+                tbody.innerHTML += `<tr>
+                    <td><strong>${formattaData(b.data)}</strong></td>
+                    <td>${o ? o.nome : b.ospite_nome}</td>
+                    <td><strong>${b.punteggio} pt</strong> - <span style="color:${colore}; font-weight:bold;">${b.esito}</span></td>
+                    <td><small>Inf: ${b.firme?.inf ? '✔️' : '-'} | OSS: ${b.firme?.oss ? '✔️' : '-'} | Med: ${b.firme?.med ? '✔️' : '-'}</small></td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="stampaBina(${b.id})">🖨️</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function aggiornaPaiOspite() {
+            const ospId = document.getElementById('pai_ospite').value;
+            const badge = document.getElementById('pai_bina_badge');
+            if(!ospId) { badge.style.display = 'none'; return; }
+            const binaOsp = db.bina.filter(b => String(b.ospite_id) === String(ospId));
+            if(binaOsp.length > 0) {
+                badge.innerText = `📊 Ultima BINA (${formattaData(binaOsp[0].data)}): ${binaOsp[0].punteggio} pt (${binaOsp[0].esito})`;
+                badge.style.display = 'block';
+            } else {
+                badge.innerText = '⚠️ Nessuna valutazione BINA registrata per questo ospite.';
+                badge.style.display = 'block';
+            }
+            renderPai();
+        }
+
+        function getDatiProfiloClinico() {
+            const ospId = document.getElementById('pai_ospite')?.value;
+            if (!ospId) return null;
+            const binaOsp = db.bina.filter(b => String(b.ospite_id) === String(ospId));
+            const ultimaBina = binaOsp.length > 0 ? binaOsp[0] : null;
+            const punteggio = ultimaBina ? (parseInt(ultimaBina.punteggio) || 100) : 100;
+            return {
+                nonAutosufficiente: punteggio > 230,
+                fragile: punteggio > 160 && punteggio <= 230
+            };
+        }
+
+        function generaTestoClinico(tipoCampo, dati) {
+            if (tipoCampo === 'obiettivi') {
+                if (dati.nonAutosufficiente) {
+                    return `• Mantenimento delle residue autonomie funzionali e prevenzione sindrome da allettamento.\n• Prevenzione lesioni da decubito e monitoraggio stabilità emodinamica.\n• Preservazione del comfort, idratazione e benessere psicofisico quotidiano.`;
+                } else if (dati.fragile) {
+                    return `• Conservazione delle capacità motorie e deambulazione assistita.\n• Supporto nelle ADL (igiene, vestizione, alimentazione).\n• Mantenimento vigilanza cognitiva e stimolazione dell'orientamento.`;
+                } else {
+                    return `• Promozione del movimento autonomo negli spazi comuni.\n• Sostegno del tono dell'umore e partecipazione comunitaria.\n• Monitoraggio generale dello stato di salute.`;
+                }
+            }
+            if (tipoCampo === 'interventi') {
+                if (dati.nonAutosufficiente) {
+                    return `• Cure igieniche quotidiane a letto, cambi posturali ogni 2-3 ore.\n• Somministrazione terapia farmacologica prescritta e medicazioni.\n• Rilevazione trisettimanale parametri vitali: PA, FC, SpO2, TC.\n• Mobilizzazione passiva assistita da parte del personale OSS.`;
+                } else if (dati.fragile) {
+                    return `• Supervisione OSS durante l'igiene personale e i pasti.\n• Distribuzione terapia farmacologica secondo orari prefissati.\n• Rilevazione settimanale parametri vitali.\n• Vigilanza nella deambulazione con ausili.`;
+                } else {
+                    return `• Supporto discreto e vigilanza durante le attività quotidiane.\n• Distribuzione farmaci prescritti con verifica assunzione.\n• Controllo periodico dei parametri vitali.`;
+                }
+            }
+            if (tipoCampo === 'sociale') {
+                if (dati.nonAutosufficiente) {
+                    return `• Stimolazione sensoriale (musica, lettura, dialogo sereno).\n• Presenza nei momenti comuni in salone in carrozzina.\n• Facilitazione delle visite e videochiamate con i familiari.`;
+                } else if (dati.fragile) {
+                    return `• Coinvolgimento nei laboratori ricreativi (tombola, memoria).\n• Integrazione con gli altri ospiti nei momenti ricreativi.\n• Contatti telefonici regolari con la famiglia.`;
+                } else {
+                    return `• Partecipazione continuativa alle iniziative di animazione.\n• Promozione di ruoli attivi nella vita comunitaria.\n• Facilitazione delle uscite con i familiari.`;
+                }
+            }
+            return '';
+        }
+
+        function compilaInteroPaiAutomatico() {
+            const dati = getDatiProfiloClinico();
+            if (!dati) return alert("Seleziona prima l'ospite!");
+            document.getElementById('pai_obiettivi').value = generaTestoClinico('obiettivi', dati);
+            document.getElementById('pai_interventi').value = generaTestoClinico('interventi', dati);
+            document.getElementById('pai_sociale').value = generaTestoClinico('sociale', dati);
+            alert("⚡ P.A.I. compilato automaticamente in base all'indice BINA!");
+        }
+
+        function salvaPai() {
+            const ospId = document.getElementById('pai_ospite').value;
+            const dataP = document.getElementById('pai_data').value;
+            if(!ospId || !dataP) return alert("Seleziona Ospite e Data P.A.I.!");
+
+            const record = {
+                id: Date.now(),
+                ospite_id: ospId,
+                data: dataP,
+                obiettivi: document.getElementById('pai_obiettivi').value.trim(),
+                interventi: document.getElementById('pai_interventi').value.trim(),
+                sociale: document.getElementById('pai_sociale').value.trim(),
+                firme: {
+                    inf: document.getElementById('pai_firma_inf').value || null,
+                    oss: document.getElementById('pai_firma_oss').value || null,
+                    med: document.getElementById('pai_firma_med').value || null
+                }
+            };
+
+            fbDb.ref(`gestionale_db/pai/${record.id}`).set(record).then(() => {
+                alert("✅ P.A.I. salvato!");
+                document.getElementById('pai_obiettivi').value = "";
+                document.getElementById('pai_interventi').value = "";
+                document.getElementById('pai_sociale').value = "";
+            });
+        }
+
+        function renderPai() {
+            const cont = document.getElementById('lista-pai-container');
+            const ospId = document.getElementById('pai_ospite').value;
+            const lista = ospId ? db.pai.filter(p => String(p.ospite_id) === String(ospId)) : db.pai;
+            cont.innerHTML = '';
+            if(lista.length === 0) {
+                cont.innerHTML = '<p style="color:#64748b; text-align:center;">Nessun P.A.I. presente per questo ospite.</p>';
+                return;
+            }
+            lista.forEach(p => {
+                const o = db.ospiti.find(x => String(x.id) === String(p.ospite_id));
+                cont.innerHTML += `
+                    <div style="background:white; border-left:5px solid #0f766e; border:1px solid #ddd; padding:14px; border-radius:8px; margin-bottom:12px;">
+                        <h4 style="margin:0 0 6px 0;">P.A.I. di ${o ? o.nome : 'Ospite'} (${formattaData(p.data)})</h4>
+                        <p style="margin:4px 0; white-space:pre-line;"><strong>1. Obiettivi:</strong>\n${p.obiettivi || '-'}</p>
+                        <p style="margin:4px 0; white-space:pre-line;"><strong>2. Interventi:</strong>\n${p.interventi || '-'}</p>
+                        <p style="margin:4px 0; white-space:pre-line;"><strong>3. Area Sociale:</strong>\n${p.sociale || '-'}</p>
+                    </div>`;
+            });
+        }
+
+        function stampaBina(id) {
+            const b = db.bina.find(x => String(x.id) === String(id));
+            if(!b) return;
+            const o = db.ospiti.find(x => String(x.id) === String(b.ospite_id));
+            const overlay = document.getElementById('stampa-overlay');
+            overlay.innerHTML = `
+                <div class="no-print" style="text-align:center; margin-bottom:20px;">
+                    <button class="btn btn-warning" onclick="window.print()">🖨️ Stampa</button>
+                    <button class="btn btn-dark" onclick="document.getElementById('stampa-overlay').style.display='none'">Chiudi</button>
+                </div>
+                <div style="max-width:800px; margin:0 auto; font-family:'Times New Roman', serif; line-height:1.5;">
+                    <h2 style="text-align:center;">SCHEDA DI VALUTAZIONE B.I.N.A.</h2>
+                    <p><strong>Ospite:</strong> ${o ? o.nome : b.ospite_nome} | <strong>CF:</strong> ${o?.cf || '-'}</p>
+                    <p><strong>Data:</strong> ${formattaData(b.data)} | <strong>Punteggio:</strong> ${b.punteggio} (${b.esito})</p>
+                </div>
+            `;
+            overlay.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

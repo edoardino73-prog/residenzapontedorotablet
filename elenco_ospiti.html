@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Elenco Ospiti - Tablet Edition</title>
+    
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            background-color: #f1f5f9; 
+            color: #0f172a; 
+            padding: 16px;
+            font-size: 15px;
+        }
+
+        .main-container { max-width: 1400px; margin: 0 auto; }
+
+        /* SEARCH BAR ADATTIVA */
+        .search-toolbar {
+            background: #ffffff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            border: 1px solid #cbd5e1;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+        .search-input-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            min-width: 250px;
+        }
+        .search-input-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+            background: transparent;
+            font-family: inherit;
+        }
+        .select-filtro {
+            padding: 11px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 600;
+            background: white;
+            color: #334155;
+            height: 46px;
+        }
+        .badge-presenti-count {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 11px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            height: 46px;
+            display: flex;
+            align-items: center;
+        }
+        .btn-home {
+            background: #0f766e;
+            color: white;
+            text-decoration: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            height: 46px;
+        }
+
+        /* GRIGLIA ADATTIVA TABLET 10/11" */
+        .grid-cards-ospiti {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 16px;
+        }
+
+        @media (min-width: 1024px) and (orientation: landscape) {
+            .grid-cards-ospiti { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (orientation: portrait) {
+            .grid-cards-ospiti { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+        }
+
+        /* CARD OSPITE TOUCH FRIENDLY */
+        .ospite-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .ospite-card.femmina { border-left: 6px solid #db2777; }
+        .ospite-card.maschio { border-left: 6px solid #0284c7; }
+
+        .card-header-info { display: flex; align-items: center; gap: 14px; }
+        .card-avatar {
+            width: 62px;
+            height: 62px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .card-title-meta { flex: 1; min-width: 0; }
+        .card-nome {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge-eta {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .card-cf { margin: 3px 0 0 0; font-size: 12.5px; color: #64748b; font-family: monospace; }
+
+        .dettagli-anagrafici { font-size: 13px; line-height: 1.5; color: #334155; }
+        .box-referenti {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .box-referenti a { color: #0284c7; font-weight: 600; text-decoration: underline; padding: 2px 0; display: inline-block; }
+
+        /* PULSANTI TOUCH CARD */
+        .card-action-buttons {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 6px;
+        }
+        .btn-card {
+            border: none;
+            border-radius: 8px;
+            min-height: 46px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            touch-action: manipulation;
+        }
+        .btn-card:active { transform: scale(0.96); }
+        .btn-reparto { background: #0f766e; }
+        .btn-fascicolo { background: #1e293b; }
+        .btn-anagrafica { background: #334155; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- TOOLBAR RICERCA -->
+        <div class="search-toolbar">
+            <div class="search-input-box">
+                <span style="font-size:18px;">🔍</span>
+                <input type="text" id="filtro_testo" placeholder="Cerca per Nome, Cognome, CF, MMG..." oninput="applicaFiltri()">
+            </div>
+            <select class="select-filtro" id="filtro_stato" onchange="applicaFiltri()">
+                <option value="PRESENTI">Solo Ospiti Presenti</option>
+                <option value="TUTTI">Tutti (Inclusi Dimessi)</option>
+            </select>
+            <div class="badge-presenti-count" id="contatore_presenti">Presenti: 0</div>
+            <a href="index.html" class="btn-home">🏛️ Reparto</a>
+        </div>
+
+        <div class="grid-cards-ospiti" id="contenitore-cards-ospiti">
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color:#64748b;">
+                Caricamento elenco ospiti...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
+            messagingSenderId: "646708586773",
+            appId: "1:646708586773:web:a9d1956abdf72ace4ba11c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+
+        let dbOspiti = [];
+
+        function forceArray(data) {
+            if (!data) return [];
+            return (Array.isArray(data) ? data : Object.values(data).filter(item => item !== null)).sort((a,b) => b.id - a.id);
+        }
+
+        function formattaData(iso) { 
+            if(!iso) return "-"; 
+            const p = iso.split('-'); 
+            return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso; 
+        }
+
+        function calcolaEta(dobIso) {
+            if(!dobIso) return null;
+            const nascita = new Date(dobIso);
+            if(isNaN(nascita.getTime())) return null;
+            const oggi = new Date();
+            let eta = oggi.getFullYear() - nascita.getFullYear();
+            const m = oggi.getMonth() - nascita.getMonth();
+            if (m < 0 || (m === 0 && oggi.getDate() < nascita.getDate())) eta--;
+            return eta > 0 ? eta : null;
+        }
+
+        firebase.auth().signInAnonymously().catch(e => console.error(e));
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) {
+                fbDb.ref('gestionale_db/ospiti').on('value', snap => {
+                    dbOspiti = forceArray(snap.val());
+                    applicaFiltri();
+                });
+            }
+        });
+
+        function applicaFiltri() {
+            const query = (document.getElementById('filtro_testo').value || '').trim().toLowerCase();
+            const filtroStato = document.getElementById('filtro_stato').value;
+            const contatoreEl = document.getElementById('contatore_presenti');
+
+            const presentiTot = dbOspiti.filter(o => !o.fine_servizio);
+            if(contatoreEl) contatoreEl.innerText = `Presenti: ${presentiTot.length}`;
+
+            let filtrati = dbOspiti;
+            if(filtroStato === 'PRESENTI') filtrati = filtrati.filter(o => !o.fine_servizio);
+
+            if(query) {
+                filtrati = filtrati.filter(o => {
+                    const nome = (o.nome || '').toLowerCase();
+                    const cf = (o.cf || '').toLowerCase();
+                    const mmg = (o.mmg?.nome || '').toLowerCase();
+                    const comune = (o.luogo_nascita?.comune || '').toLowerCase();
+                    return nome.includes(query) || cf.includes(query) || mmg.includes(query) || comune.includes(query);
+                });
+            }
+            renderCards(filtrati);
+        }
+
+        function renderCards(lista) {
+            const container = document.getElementById('contenitore-cards-ospiti');
+            container.innerHTML = '';
+
+            if(lista.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; background: white; border-radius: 12px; color:#64748b;">Nessun ospite trovato.</div>`;
+                return;
+            }
+
+            lista.forEach(o => {
+                const sessoVal = String(o.sesso || '1');
+                const isFemmina = sessoVal === '2' || sessoVal.toUpperCase() === 'F';
+                const sessoIcon = isFemmina ? '<span style="color:#db2777; font-size:18px;">♀</span>' : '<span style="color:#0284c7; font-size:18px;">♂</span>';
+                const classeGenere = isFemmina ? 'femmina' : 'maschio';
+
+                const eta = calcolaEta(o.dob);
+                const badgeEta = eta ? `<span class="badge-eta">🎂 ${eta} anni</span>` : '';
+
+                const avatarHtml = o.foto?.dati 
+                    ? `<img src="${o.foto.dati}" class="card-avatar" alt="${o.nome}">`
+                    : `<div class="card-avatar">👤</div>`;
+
+                const luogoNas = o.luogo_nascita?.comune ? ` a ${o.luogo_nascita.comune}` : '';
+                const natoTesto = o.dob ? `Nato il: <strong>${formattaData(o.dob)}</strong>${eta ? ` (${eta} aa)` : ''}${luogoNas}` : 'Nato il: -';
+                const ingressoTesto = `Ingresso in struttura: <strong>${formattaData(o.ingresso)}</strong>`;
+
+                let contattiHtml = '';
+                const haFamiglia = o.familiare && o.familiare.nome;
+                const haMmg = o.mmg && o.mmg.nome;
+                const haAds = o.ads && o.ads.nome;
+
+                if (!haFamiglia && !haMmg && !haAds) {
+                    contattiHtml = `<div style="color:#94a3b8; font-style:italic;">Nessun referente censito</div>`;
+                } else {
+                    const r = [];
+                    if (haFamiglia) {
+                        const tel = o.familiare.telefono ? ` • <a href="tel:${o.familiare.telefono}">${o.familiare.telefono}</a>` : '';
+                        r.push(`📞 <b>Famiglia:</b> ${o.familiare.nome} (${o.familiare.parentela || 'Ref.'})${tel}`);
+                    }
+                    if (haMmg) {
+                        const tel = o.mmg.tel ? ` • <a href="tel:${o.mmg.tel}">${o.mmg.tel}</a>` : '';
+                        r.push(`🩺 <b>MMG:</b> ${o.mmg.nome}${tel}`);
+                    }
+                    if (haAds) {
+                        const tel = o.ads.tel ? ` • <a href="tel:${o.ads.tel}">${o.ads.tel}</a>` : '';
+                        r.push(`⚖️ <b>AdS:</b> ${o.ads.nome}${tel}`);
+                    }
+                    contattiHtml = r.join('<br>');
+                }
+
+                container.innerHTML += `
+                    <div class="ospite-card ${classeGenere}">
+                        <div class="card-header-info">
+                            ${avatarHtml}
+                            <div class="card-title-meta">
+                                <h3 class="card-nome">
+                                    ${sessoIcon}
+                                    <span>${o.nome}</span>
+                                    ${badgeEta}
+                                </h3>
+                                <p class="card-cf">CF: ${o.cf || '-'}</p>
+                            </div>
+                        </div>
+
+                        <div class="dettagli-anagrafici">
+                            ${natoTesto}<br>
+                            ${ingressoTesto}
+                        </div>
+
+                        <div class="box-referenti">
+                            ${contattiHtml}
+                        </div>
+
+                        <div class="card-action-buttons">
+                            <button type="button" class="btn-card btn-reparto" onclick="selezionaInReparto(${o.id})">Reparto</button>
+                            <a href="fascicolo_bina_pai.html?id=${o.id}" class="btn-card btn-fascicolo">P.A.I. ↗</a>
+                            <a href="anagrafica_ospiti.html?id=${o.id}" class="btn-card btn-anagrafica">Anag. ↗</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function selezionaInReparto(id) {
+            window.location.href = `index.html?sel_ospite=${id}`;
+        }
+    </script>
+</body>
+</html>
