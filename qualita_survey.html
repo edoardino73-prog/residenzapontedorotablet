@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Satisfaction & Qualità - Residenza Ponte D'Oro</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f6f9; padding: 25px; color: #2c3e50; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .form-box { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f39c12; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; display: flex; flex-direction: column; min-width: 150px; }
+        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+        input, select, textarea { padding: 9px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; }
+        .btn { padding: 9px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; text-decoration: none; display: inline-block; }
+        .btn-warning { background-color: #f39c12; }
+        .btn-info { background-color: #17a2b8; }
+        .btn-dark { background-color: #34495e; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-sm { padding: 5px 8px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e9ecef; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; }
+        .modal-content { background:white; padding:25px; border-radius:8px; max-width:480px; width:90%; text-align:center; }
+        #stampa-locandina { display: none; }
+        @media print {
+            .no-print { display: none !important; }
+            #stampa-locandina { display: block !important; }
+            .container { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="stampa-locandina"></div>
+
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h2 style="margin:0; color:#f39c12;">⭐ Questionario Qualità e Customer Satisfaction</h2>
+                <small style="color:#64748b;">Rilevazione del gradimento familiari ed ospiti</small>
+            </div>
+            <a href="index.html" class="btn btn-dark">🏛️ Torna al Gestionale</a>
+        </div>
+
+        <div class="form-box">
+            <h4 style="margin-top:0;">Compilazione Questionario</h4>
+            <div class="form-row">
+                <div class="form-group"><label>Data Valutazione *</label><input type="date" id="sv_data"></div>
+                <div class="form-group"><label>Soggetto (Opzionale o Anonimo)</label><input type="text" id="sv_soggetto" placeholder="Es. Familiare Mario Rossi"></div>
+            </div>
+            
+            <div class="form-row" style="background:#fff; padding:15px; border-radius:6px; border:1px solid #ddd;">
+                <div class="form-group"><label>🥩 Ristorazione</label><select id="sv_voto_cibo"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select></div>
+                <div class="form-group"><label>🧹 Igiene</label><select id="sv_voto_igiene"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select></div>
+                <div class="form-group"><label>🧑‍⚕️ Personale</label><select id="sv_voto_personale"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select></div>
+                <div class="form-group"><label>🎨 Animazione</label><select id="sv_voto_attivita"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select></div>
+                <div class="form-group"><label>🏨 Struttura</label><select id="sv_voto_struttura"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select></div>
+            </div>
+
+            <div class="form-group" style="margin: 15px 0;">
+                <label>Suggerimenti o Osservazioni</label>
+                <textarea id="sv_note" rows="2" placeholder="Scrivi note o reclami..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-warning" onclick="salvaSurvey()">📝 Registra Scheda</button>
+                <button class="btn btn-info" onclick="apriModalQR()">📱 Mostra QR Code Reception</button>
+            </div>
+        </div>
+
+        <table>
+            <thead><tr><th>Data</th><th>Soggetto</th><th>Cibo</th><th>Igiene</th><th>Staff</th><th>Attività</th><th>Comfort</th><th>Note</th><th>Azioni</th></tr></thead>
+            <tbody id="tabella-surveys"></tbody>
+        </table>
+    </div>
+
+    <!-- MODALE QR -->
+    <div id="modal-qr" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">QR Code Questionario Reception</h3>
+            <img id="qr-img" src="" style="width:200px; height:200px; margin:10px auto; display:block;">
+            <div style="display:flex; gap:8px; justify-content:center; margin-top:15px;">
+                <button class="btn btn-warning btn-sm" onclick="stampaLocandina()">🖨️ Stampa Cartello Reception</button>
+                <button class="btn btn-dark btn-sm" onclick="document.getElementById('modal-qr').style.display='none'">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
+            messagingSenderId: "646708586773",
+            appId: "1:646708586773:web:a9d1956abdf72ace4ba11c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+
+        let dbSurveys = [];
+
+        function forceArray(data) {
+            if (!data) return [];
+            return (Array.isArray(data) ? data : Object.values(data).filter(item => item !== null)).sort((a,b) => b.id - a.id);
+        }
+        function formattaData(iso) { if(!iso) return "-"; const p = iso.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; }
+
+        firebase.auth().signInAnonymously().catch(e => console.error(e));
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) {
+                fbDb.ref('gestionale_db/surveys').on('value', snap => {
+                    dbSurveys = forceArray(snap.val());
+                    renderTabella();
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('sv_data').value = new Date().toISOString().split('T')[0];
+        });
+
+        function salvaSurvey() {
+            const dataV = document.getElementById('sv_data').value;
+            if(!dataV) return alert("Inserisci la data!");
+
+            const record = {
+                id: Date.now(),
+                data: dataV,
+                soggetto: document.getElementById('sv_soggetto').value.trim() || "Anonimo",
+                cibo: document.getElementById('sv_voto_cibo').value,
+                igiene: document.getElementById('sv_voto_igiene').value,
+                personale: document.getElementById('sv_voto_personale').value,
+                attivita: document.getElementById('sv_voto_attivita').value,
+                struttura: document.getElementById('sv_voto_struttura').value,
+                note: document.getElementById('sv_note').value.trim() || "-"
+            };
+
+            fbDb.ref('gestionale_db/surveys/' + record.id).set(record).then(() => {
+                alert("✅ Questionario salvato!");
+                document.getElementById('sv_soggetto').value = '';
+                document.getElementById('sv_note').value = '';
+            });
+        }
+
+        function renderTabella() {
+            const tbody = document.getElementById('tabella-surveys');
+            tbody.innerHTML = '';
+            if(dbSurveys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:15px; color:#64748b;">Nessun questionario registrato.</td></tr>';
+                return;
+            }
+            dbSurveys.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td>${formattaData(s.data)}</td>
+                    <td><strong>${s.soggetto}</strong></td>
+                    <td>${'⭐'.repeat(s.cibo)}</td>
+                    <td>${'⭐'.repeat(s.igiene)}</td>
+                    <td>${'⭐'.repeat(s.personale)}</td>
+                    <td>${'⭐'.repeat(s.attivita)}</td>
+                    <td>${'⭐'.repeat(s.struttura)}</td>
+                    <td><small>${s.note}</small></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="eliminaSurvey(${s.id})">🗑️</button></td>
+                </tr>`;
+            });
+        }
+
+        function eliminaSurvey(id) {
+            if(confirm("Eliminare questa scheda?")) fbDb.ref('gestionale_db/surveys/' + id).remove();
+        }
+
+        function apriModalQR() {
+            const url = window.location.href;
+            document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+            document.getElementById('modal-qr').style.display = 'flex';
+        }
+
+        function stampaLocandina() {
+            const url = window.location.href;
+            const qr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+            const overlay = document.getElementById('stampa-locandina');
+            overlay.innerHTML = `
+                <div style="text-align:center; padding:40px; font-family:'Segoe UI', sans-serif;">
+                    <h1 style="color:#1793a6;">RESIDENZA PONTE D'ORO</h1>
+                    <h2>La tua opinione è importante per noi</h2>
+                    <p>Inquadra il codice QR con lo smartphone per esprimere il tuo giudizio sui servizi della struttura.</p>
+                    <img src="${qr}" style="width:260px; height:260px; margin:20px auto; border:4px solid #333; border-radius:10px;">
+                    <p><small>La compilazione è rapida e completamente anonima.</small></p>
+                </div>
+            `;
+            window.print();
+        }
+    </script>
+</body>
+</html>

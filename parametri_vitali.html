@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametri Vitali - Residenza Ponte D'Oro</title>
+    
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- Chart.js isolato su questa pagina -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f6f9; padding: 25px; color: #2c3e50; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h2 { margin: 0; color: #2c3e50; }
+        .btn { padding: 9px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; text-decoration: none; display: inline-block; }
+        .btn-primary { background-color: #3498db; }
+        .btn-success { background-color: #2ecc71; }
+        .btn-warning { background-color: #f39c12; }
+        .btn-danger { background-color: #e74c3c; }
+        .btn-dark { background-color: #34495e; }
+        .btn-outline { background-color: transparent; border: 1px solid #3498db; color: #3498db; }
+        .btn-sm { padding: 5px 8px; font-size: 12px; }
+        .form-box { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 25px; border-left: 4px solid #2980b9; }
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; display: flex; flex-direction: column; min-width: 180px; }
+        label { font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+        input, select { padding: 9px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th, td { border: 1px solid #e9ecef; padding: 10px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h2>📈 Registro Parametri Vitali e Trend Clinici</h2>
+                <small style="color: #64748b;">Modulo Clinico - Residenza Ponte D'Oro</small>
+            </div>
+            <div class="no-print" style="display:flex; gap:10px;">
+                <button class="btn btn-warning" onclick="window.print()">🖨️ Stampa Registro</button>
+                <a href="index.html" class="btn btn-dark">🏛️ Torna al Gestionale</a>
+            </div>
+        </div>
+
+        <!-- FORM REGISTRAZIONE -->
+        <div class="form-box no-print">
+            <h4 style="margin-top:0; color:#2980b9;">Nuova Rilevazione Parametri</h4>
+            <div class="form-row">
+                <div class="form-group"><label>Ospite *</label><select id="par_ospite" onchange="cambiaOspiteParametri()"></select></div>
+                <div class="form-group"><label>Data Registrazione *</label><input type="date" id="par_data"></div>
+                <div class="form-group"><label>Firma Operatore Rilevatore *</label><input type="text" id="par_firma" placeholder="Nome Operatore"></div>
+            </div>
+            
+            <div class="form-row" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; align-items: flex-end;">
+                <div class="form-group" style="min-width: 220px;">
+                    <label style="color:#c0392b;">🩸 Press. Art. (PA Max / Min)</label>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <input type="number" id="par_pa_max" placeholder="Max" min="50" max="260" style="border-color:#fadbd8; text-align:center; font-weight:bold; flex:1;">
+                        <span style="font-size: 18px; font-weight: bold; color: #c0392b;">/</span>
+                        <input type="number" id="par_pa_min" placeholder="Min" min="30" max="150" style="border-color:#fadbd8; text-align:center; font-weight:bold; flex:1;">
+                        <span style="font-size: 11px; color: #7f8c8d; font-weight:bold;">mmHg</span>
+                    </div>
+                </div>
+                <div class="form-group"><label style="color:#e74c3c;">❤️ Frequenza Cardiaca (FC)</label><input type="number" id="par_fc" placeholder="BPM"></div>
+                <div class="form-group"><label style="color:#2980b9;">💨 Saturazione (SpO2)</label><input type="number" id="par_spo2" placeholder="%" min="50" max="100"></div>
+                <div class="form-group"><label style="color:#d35400;">🌡️ Temp. Corporea (TC)</label><input type="number" step="0.1" id="par_tc" placeholder="°C"></div>
+                <div class="form-group"><label style="color:#f39c12;">💧 Glicemia (HGT)</label><input type="number" id="par_hgt" placeholder="mg/dl"></div>
+            </div>
+            <button class="btn btn-success" style="margin-top: 15px;" onclick="aggiungiParametri()">➕ Salva Misurazione</button>
+        </div>
+
+        <!-- GRAFICO ANDAMENTO -->
+        <div class="form-box" style="background:#fff; border-left-color: #2c3e50;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px; border-bottom:1px dashed #cbd5e1; padding-bottom:10px;">
+                <div>
+                    <h4 style="margin: 0; color: #2c3e50;">📊 Andamento Clinico nel Tempo</h4>
+                    <small id="grafico-sottotitolo" style="color: #64748b;">Seleziona un ospite dal menu per visualizzare le curve</small>
+                </div>
+                <div class="no-print" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button class="btn btn-primary btn-sm" id="btn-chart-pa" onclick="impostaVisualizzazioneGrafico('PA')">🩸 PA (Max/Min)</button>
+                    <button class="btn btn-outline btn-sm" id="btn-chart-fc" onclick="impostaVisualizzazioneGrafico('FC')">❤️ Freq. Cardiaca</button>
+                    <button class="btn btn-outline btn-sm" id="btn-chart-spo2" onclick="impostaVisualizzazioneGrafico('SPO2')">💨 SpO2</button>
+                    <button class="btn btn-outline btn-sm" id="btn-chart-tc" onclick="impostaVisualizzazioneGrafico('TC')">🌡️ Temp.</button>
+                    <button class="btn btn-outline btn-sm" id="btn-chart-hgt" onclick="impostaVisualizzazioneGrafico('HGT')">💧 Glicemia</button>
+                </div>
+            </div>
+            <div style="position: relative; height: 320px; width: 100%;">
+                <canvas id="chartParametriCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- TABELLA STORICO -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Data / Ora</th>
+                    <th>Ospite</th>
+                    <th style="color:#c0392b;">🩸 PA</th>
+                    <th style="color:#e74c3c;">❤️ FC</th>
+                    <th style="color:#2980b9;">💨 SpO2</th>
+                    <th style="color:#d35400;">🌡️ TC</th>
+                    <th style="color:#f39c12;">💧 HGT</th>
+                    <th>Firma</th>
+                    <th class="no-print">Azioni</th>
+                </tr>
+            </thead>
+            <tbody id="tabella-parametri">
+                <tr id="placeholder-parametri"><td colspan="9" style="text-align:center; padding:20px; color:#7f8c8d;">Nessuna misurazione registrata.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2a7aK5Ze4mFF7ku4eFiz4or1pImHXoiA",
+            authDomain: "residenza-ponte-d-oro.firebaseapp.com",
+            databaseURL: "https://residenza-ponte-d-oro-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "residenza-ponte-d-oro",
+            storageBucket: "residenza-ponte-d-oro.firebasestorage.app",
+            messagingSenderId: "646708586773",
+            appId: "1:646708586773:web:a9d1956abdf72ace4ba11c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+
+        let db = { ospiti: [], parametri: [] };
+        let chartParametriInstance = null;
+        let tipoGraficoAttivo = 'PA';
+
+        function forceArray(data) {
+            if (!data) return [];
+            return (Array.isArray(data) ? data : Object.values(data).filter(item => item !== null)).sort((a,b) => b.id - a.id);
+        }
+        function formattaData(iso) { if(!iso) return "-"; const p = iso.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; }
+
+        firebase.auth().signInAnonymously().catch(e => console.error(e));
+        firebase.auth().onAuthStateChanged(user => {
+            if(user) {
+                fbDb.ref('gestionale_db').on('value', snap => {
+                    const d = snap.val() || {};
+                    db.ospiti = forceArray(d.ospiti);
+                    db.parametri = forceArray(d.parametri);
+                    popolaSelettoreOspiti();
+                    renderTabella();
+                    renderGrafico();
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('par_data').value = new Date().toISOString().split('T')[0];
+        });
+
+        function popolaSelettoreOspiti() {
+            const sel = document.getElementById('par_ospite');
+            const prec = sel.value;
+            sel.innerHTML = '<option value="">-- Seleziona Ospite --</option>';
+            db.ospiti.filter(o => !o.fine_servizio).forEach(o => {
+                sel.options.add(new Option(o.nome, o.id));
+            });
+            if(prec) sel.value = prec;
+        }
+
+        function cambiaOspiteParametri() {
+            renderTabella();
+            renderGrafico();
+        }
+
+        function impostaVisualizzazioneGrafico(tipo) {
+            tipoGraficoAttivo = tipo;
+            renderGrafico();
+        }
+
+        function aggiungiParametri() {
+            const ospiteId = document.getElementById('par_ospite').value;
+            const dataP = document.getElementById('par_data').value;
+            const firma = document.getElementById('par_firma').value.trim();
+            const paMax = document.getElementById('par_pa_max').value.trim();
+            const paMin = document.getElementById('par_pa_min').value.trim();
+            const fc = document.getElementById('par_fc').value.trim();
+            const spo2 = document.getElementById('par_spo2').value.trim();
+            const tc = document.getElementById('par_tc').value.trim();
+            const hgt = document.getElementById('par_hgt').value.trim();
+
+            if (!ospiteId || !dataP || !firma) return alert("Compila Ospite, Data e Firma Rilevatore!");
+            let paFormattata = (paMax || paMin) ? `${paMax}/${paMin}` : "-";
+            if (paFormattata === "-" && !fc && !spo2 && !tc && !hgt) return alert("Inserisci almeno un parametro!");
+
+            const record = {
+                id: Date.now(),
+                ospite_id: ospiteId,
+                data: dataP,
+                ora: new Date().toTimeString().substring(0, 5),
+                firma: firma,
+                pa: paFormattata,
+                fc: fc || '-',
+                spo2: spo2 || '-',
+                tc: tc || '-',
+                hgt: hgt || '-'
+            };
+
+            fbDb.ref('gestionale_db/parametri/' + record.id).set(record).then(() => {
+                alert("✅ Parametri registrati!");
+                document.getElementById('par_pa_max').value = '';
+                document.getElementById('par_pa_min').value = '';
+                document.getElementById('par_fc').value = '';
+                document.getElementById('par_spo2').value = '';
+                document.getElementById('par_tc').value = '';
+                document.getElementById('par_hgt').value = '';
+            });
+        }
+
+        function eliminaParametri(id) {
+            if (confirm("Eliminare questa rilevazione?")) {
+                fbDb.ref('gestionale_db/parametri/' + id).remove();
+            }
+        }
+
+        function renderTabella() {
+            const tbody = document.getElementById('tabella-parametri');
+            const placeholder = document.getElementById('placeholder-parametri');
+            const filtroId = document.getElementById('par_ospite').value;
+            const lista = filtroId ? db.parametri.filter(p => String(p.ospite_id) === String(filtroId)) : db.parametri;
+
+            tbody.innerHTML = '';
+            if (lista.length === 0) {
+                if (placeholder) placeholder.style.display = 'table-row';
+                return;
+            }
+            if (placeholder) placeholder.style.display = 'none';
+
+            lista.forEach(p => {
+                const o = db.ospiti.find(x => String(x.id) === String(p.ospite_id));
+                tbody.innerHTML += `<tr>
+                    <td>${formattaData(p.data)} ${p.ora || ''}</td>
+                    <td><strong>${o ? o.nome : '-'}</strong></td>
+                    <td style="color:#c0392b; font-weight:bold;">${p.pa}</td>
+                    <td style="color:#e74c3c;">${p.fc}</td>
+                    <td style="color:#2980b9;">${p.spo2}</td>
+                    <td style="color:#d35400;">${p.tc}</td>
+                    <td style="color:#f39c12;">${p.hgt}</td>
+                    <td><small>${p.firma}</small></td>
+                    <td class="no-print"><button class="btn btn-danger btn-sm" onclick="eliminaParametri(${p.id})">🗑️</button></td>
+                </tr>`;
+            });
+        }
+
+        function renderGrafico() {
+            const canvas = document.getElementById('chartParametriCanvas');
+            const ospiteId = document.getElementById('par_ospite').value;
+            const sottotitolo = document.getElementById('grafico-sottotitolo');
+
+            ['PA', 'FC', 'SPO2', 'TC', 'HGT'].forEach(t => {
+                const btn = document.getElementById(`btn-chart-${t.toLowerCase()}`);
+                if (btn) {
+                    if (t === tipoGraficoAttivo) {
+                        btn.classList.remove('btn-outline'); btn.classList.add('btn-primary');
+                    } else {
+                        btn.classList.remove('btn-primary'); btn.classList.add('btn-outline');
+                    }
+                }
+            });
+
+            if (!ospiteId) {
+                sottotitolo.innerText = "Seleziona un ospite dal menu per visualizzare i grafici.";
+                if (chartParametriInstance) chartParametriInstance.destroy();
+                return;
+            }
+
+            const ospite = db.ospiti.find(x => String(x.id) === String(ospiteId));
+            sottotitolo.innerText = `Ospite: ${ospite ? ospite.nome : '-'} | Trend: ${tipoGraficoAttivo}`;
+
+            const rilevazioni = db.parametri
+                .filter(p => String(p.ospite_id) === String(ospiteId))
+                .sort((a, b) => (a.data + (a.ora || '')).localeCompare(b.data + (b.ora || '')));
+
+            if (rilevazioni.length === 0) {
+                if (chartParametriInstance) chartParametriInstance.destroy();
+                sottotitolo.innerText = `Nessun parametro registrato per ${ospite ? ospite.nome : 'questo ospite'}.`;
+                return;
+            }
+
+            const labels = rilevazioni.map(r => `${formattaData(r.data)} ${r.ora || ''}`);
+            let datasets = [];
+
+            if (tipoGraficoAttivo === 'PA') {
+                const dataMax = [], dataMin = [];
+                rilevazioni.forEach(r => {
+                    if (r.pa && r.pa.includes('/')) {
+                        const p = r.pa.split('/');
+                        dataMax.push(parseFloat(p[0]) || null);
+                        dataMin.push(parseFloat(p[1]) || null);
+                    } else {
+                        dataMax.push(null); dataMin.push(null);
+                    }
+                });
+                datasets = [
+                    { label: 'PA Sistolica (Max) [mmHg]', data: dataMax, borderColor: '#c0392b', backgroundColor: 'rgba(192, 57, 43, 0.1)', borderWidth: 2, tension: 0.25, pointRadius: 4 },
+                    { label: 'PA Diastolica (Min) [mmHg]', data: dataMin, borderColor: '#2980b9', backgroundColor: 'rgba(41, 128, 185, 0.1)', borderWidth: 2, tension: 0.25, pointRadius: 4 }
+                ];
+            } else if (tipoGraficoAttivo === 'FC') {
+                datasets = [{ label: 'Frequenza Cardiaca (BPM)', data: rilevazioni.map(r => parseFloat(r.fc) || null), borderColor: '#e74c3c', backgroundColor: 'rgba(231, 76, 60, 0.15)', borderWidth: 2, tension: 0.25, fill: true, pointRadius: 4 }];
+            } else if (tipoGraficoAttivo === 'SPO2') {
+                datasets = [{ label: 'Saturazione SpO2 (%)', data: rilevazioni.map(r => parseFloat(r.spo2) || null), borderColor: '#2980b9', backgroundColor: 'rgba(41, 128, 185, 0.15)', borderWidth: 2, tension: 0.25, fill: true, pointRadius: 4 }];
+            } else if (tipoGraficoAttivo === 'TC') {
+                datasets = [{ label: 'Temperatura Corporea (°C)', data: rilevazioni.map(r => parseFloat(r.tc) || null), borderColor: '#d35400', backgroundColor: 'rgba(211, 84, 0, 0.15)', borderWidth: 2, tension: 0.25, fill: true, pointRadius: 4 }];
+            } else if (tipoGraficoAttivo === 'HGT') {
+                datasets = [{ label: 'Glicemia HGT (mg/dl)', data: rilevazioni.map(r => parseFloat(r.hgt) || null), borderColor: '#f39c12', backgroundColor: 'rgba(243, 156, 18, 0.15)', borderWidth: 2, tension: 0.25, fill: true, pointRadius: 4 }];
+            }
+
+            if (chartParametriInstance) chartParametriInstance.destroy();
+            chartParametriInstance = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    </script>
+</body>
+</html>
