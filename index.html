@@ -181,28 +181,37 @@
                 <p class="dash-hint">💡 Tieni premuta un'icona per riordinare la schermata.</p>
                 <div class="dash-nav-grid" id="dashNavGrid">
                     
-                    <!-- MODULI ESTERNI LEGGERI -->
+                    <!-- MODULO CARDS OSPITI -->
                     <a class="dash-nav-item" href="elenco_ospiti.html" target="_blank" style="border-bottom: 4px solid #0f766e; background:#f0fdfa;">
                         <div class="dash-nav-icon">🛏️</div>
                         <div class="dash-nav-label" style="color:#0f766e;">Card Ospiti<br><small style="font-size:10px; color:#14b8a6;">Esterno ↗</small></div>
                     </a>
 
-                    <a class="dash-nav-item" id="dash-item-anagrafica" href="anagrafica_ospiti.html" target="_blank" style="border-bottom: 4px solid #0284c7; background:#f0f9ff; display:none;">
-                        <div class="dash-nav-icon">👥</div>
-                        <div class="dash-nav-label" style="color:#0369a1;">Anagrafica<br><small style="font-size:10px; color:#0284c7;">Dir. Sanitaria ↗</small></div>
-                    </a>
-
-                    <a class="dash-nav-item" id="dash-item-bina" href="fascicolo_bina_pai.html" target="_blank" style="border-bottom: 4px solid #6366f1; background:#f5f3ff; display:none;">
-                        <div class="dash-nav-icon">📋</div>
-                        <div class="dash-nav-label" style="color:#4338ca;">BINA & PAI<br><small style="font-size:10px; color:#6366f1;">Dir. Sanitaria ↗</small></div>
-                    </a>
-
-                    <a class="dash-nav-item" id="dash-item-alloggiati" href="alloggiati_web.html" target="_blank" style="border-bottom: 4px solid #1e293b; background:#f8fafc; display:none;">
+                    <!-- MODULO ALLOGGIATI WEB (ORA SEMPRE VISIBILE IN GRIGLIA) -->
+                    <a class="dash-nav-item" href="alloggiati_web.html" target="_blank" style="border-bottom: 4px solid #1e293b; background:#f8fafc;">
                         <div class="dash-nav-icon">👮</div>
-                        <div class="dash-nav-label" style="color:#1e293b;">Alloggiati<br><small style="font-size:10px; color:#64748b;">Dir. Sanitaria ↗</small></div>
+                        <div class="dash-nav-label" style="color:#1e293b;">Alloggiati Web<br><small style="font-size:10px; color:#0284c7;">File TXT ↗</small></div>
                     </a>
 
-                    <!-- MODULI OPERATIVI DI REPARTO INTEGRATI SUL TABLET -->
+                    <!-- ACCESSO DIRETTO AL PORTALE DELLA POLIZIA DI STATO -->
+                    <a class="dash-nav-item" href="https://alloggiatiweb.poliziadistato.it/PortaleAlloggiati/Accesso.aspx?cc=IT" target="_blank" rel="noopener noreferrer" style="border-bottom: 4px solid #0284c7; background:#f0f9ff;">
+                        <div class="dash-nav-icon">🌐</div>
+                        <div class="dash-nav-label" style="color:#0369a1;">Portale Questura<br><small style="font-size:10px; color:#0ea5e9;">Accesso Ufficiale ↗</small></div>
+                    </a>
+
+                    <!-- ANAGRAFICA E CONSENSI -->
+                    <a class="dash-nav-item" href="anagrafica_ospiti.html" target="_blank" style="border-bottom: 4px solid #0284c7; background:#f0f9ff;">
+                        <div class="dash-nav-icon">👥</div>
+                        <div class="dash-nav-label" style="color:#0369a1;">Anagrafica<br><small style="font-size:10px; color:#0284c7;">Fascicoli & Privacy ↗</small></div>
+                    </a>
+
+                    <!-- BINA & PAI -->
+                    <a class="dash-nav-item" href="fascicolo_bina_pai.html" target="_blank" style="border-bottom: 4px solid #6366f1; background:#f5f3ff;">
+                        <div class="dash-nav-icon">📋</div>
+                        <div class="dash-nav-label" style="color:#4338ca;">BINA & PAI<br><small style="font-size:10px; color:#6366f1;">Clinico ↗</small></div>
+                    </a>
+
+                    <!-- MODULI OPERATIVI DI REPARTO INTEGRATI -->
                     <div class="dash-nav-item" data-id="consegne" onclick="openApp('consegne')" style="border-bottom: 4px solid var(--cons-color);"><div class="dash-nav-icon">📝</div><div class="dash-nav-label">Consegne</div></div>
                     <div class="dash-nav-item" data-id="uscite" onclick="openApp('uscite')" style="border-bottom: 4px solid var(--uscite-color);"><div class="dash-nav-icon">🚶</div><div class="dash-nav-label">Uscite</div></div>
                     <div class="dash-nav-item" data-id="guardaroba" onclick="openApp('guardaroba')" style="border-bottom: 4px solid var(--guarda-color);"><div class="dash-nav-icon">👕</div><div class="dash-nav-label">Guardaroba</div></div>
@@ -598,6 +607,7 @@
                     dbOperatori = [];
                     snapshot.forEach(docSnap => dbOperatori.push(docSnap.data()));
                     renderLoginProfiles();
+                    verificaSessioneAttiva();
                 });
 
                 rtdb.ref('gestionale_db/operatori').on('value', (snap) => {
@@ -610,6 +620,7 @@
                             }
                         });
                         renderLoginProfiles();
+                        verificaSessioneAttiva();
                     }
                 });
 
@@ -662,6 +673,34 @@
             }
         });
 
+        // GESTIONE SESSIONE PERSISTENTE CON SESSIONSTORAGE
+        function verificaSessioneAttiva() {
+            try {
+                const sessioneJson = sessionStorage.getItem('ponte_doro_tablet_logged_op');
+                if (sessioneJson) {
+                    const op = JSON.parse(sessioneJson);
+                    if (op && op.nome) {
+                        applicaOperatoreAutenticato(op);
+                    }
+                }
+            } catch(e) {
+                console.warn("Errore lettura sessione:", e);
+            }
+        }
+
+        function applicaOperatoreAutenticato(op) {
+            window.activeOp = op.nome;
+            window.activeOpPin = op.pin || "12345";
+            window.currentLoggedOp = op;
+
+            document.getElementById('currentOpBadge').innerText = `👨‍⚕️ ${window.activeOp}`; 
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('top-nav-container').style.display = 'flex';
+            document.getElementById('appScreen').style.display = 'flex';
+
+            window.onload();
+        }
+
         function renderLoginProfiles() {
             const lc = document.getElementById('loginProfilesContainer'); 
             if(!lc) return;
@@ -706,32 +745,29 @@
         window.checkPin = () => {
             const pin = document.getElementById('loginPinInput').value;
             if (pin === window.activeOpPin || pin === "12345") { 
-                document.getElementById('currentOpBadge').innerText = `👨‍⚕️ ${window.activeOp}`; 
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('top-nav-container').style.display = 'flex';
-                document.getElementById('appScreen').style.display = 'flex';
-
-                // Visibilità Moduli Esterni Riservati alla Direzione
-                const isDir = window.isDirezioneSanitaria(window.currentLoggedOp);
-                const tileAnag = document.getElementById('dash-item-anagrafica');
-                const tileBina = document.getElementById('dash-item-bina');
-                const tileAllogg = document.getElementById('dash-item-alloggiati');
+                try {
+                    sessionStorage.setItem('ponte_doro_tablet_logged_op', JSON.stringify(window.currentLoggedOp));
+                } catch(e) {}
                 
-                if (tileAnag) tileAnag.style.display = isDir ? 'flex' : 'none';
-                if (tileBina) tileBina.style.display = isDir ? 'flex' : 'none';
-                if (tileAllogg) tileAllogg.style.display = isDir ? 'flex' : 'none';
-
-                window.onload();
-            } else { window.showToast("❌ PIN Errato"); window.clearPin(); }
+                applicaOperatoreAutenticato(window.currentLoggedOp);
+            } else { 
+                window.showToast("❌ PIN Errato"); 
+                window.clearPin(); 
+            }
         };
 
         window.logout = () => { 
+            try {
+                sessionStorage.removeItem('ponte_doro_tablet_logged_op');
+            } catch(e) {}
+
             window.activeOp = null; 
             window.currentLoggedOp = null;
             document.getElementById('top-nav-container').style.display = 'none';
             document.getElementById('appScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
-            window.resetLoginSelection(); window.goHome();
+            window.resetLoginSelection(); 
+            window.goHome();
         };
 
         function renderDynamicUI() {
